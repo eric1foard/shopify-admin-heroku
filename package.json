@@ -14,7 +14,7 @@
     "test": "jest"
   },
   "engines": {
-    "node": ">= 8.1.0"
+    "node": "8.11.3"
   },
   "browsers": [
     "last 3 chrome versions",
