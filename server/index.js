@@ -9,7 +9,6 @@ const path = require('path');
 const logger = require('morgan');
 
 const webpack = require('webpack');
-const webpackMiddleware = require('webpack-dev-middleware');
 const webpackHotMiddleware = require('webpack-hot-middleware');
 const config = require('../config/webpack.config.js');
 
@@ -68,6 +67,7 @@ app.use(
 
 // Run webpack hot reloading in dev
 if (isDevelopment) {
+  const webpackMiddleware = require('webpack-dev-middleware');
   const compiler = webpack(config);
   const middleware = webpackMiddleware(compiler, {
     hot: true,
