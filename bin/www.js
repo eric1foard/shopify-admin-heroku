@@ -14,5 +14,5 @@ server.listen(port, err => {
     return console.log('😫', chalk.red(err));
   }
   console.log('environment!!!!!!!!!!!!!!!', JSON.stringify(process.env, null, 2))
-  console.log(`🚀 Now listening on port ${chalk.green(port)}`);
+  console.log(`🚀 Now listening on AWESOME port ${chalk.green(port)}`);
 });
