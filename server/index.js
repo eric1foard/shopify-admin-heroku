@@ -8,10 +8,6 @@ const RedisStore = require('connect-redis')(session);
 const path = require('path');
 const logger = require('morgan');
 
-const webpack = require('webpack');
-const webpackHotMiddleware = require('webpack-hot-middleware');
-const config = require('../config/webpack.config.js');
-
 const ShopifyAPIClient = require('shopify-api-node');
 const ShopifyExpress = require('@shopify/shopify-express');
 const {MemoryStrategy} = require('@shopify/shopify-express/strategies');
@@ -67,6 +63,9 @@ app.use(
 
 // Run webpack hot reloading in dev
 if (isDevelopment) {
+  const webpack = require('webpack');
+  const webpackHotMiddleware = require('webpack-hot-middleware');
+  const config = require('../config/webpack.config.js');
   const webpackMiddleware = require('webpack-dev-middleware');
   const compiler = webpack(config);
   const middleware = webpackMiddleware(compiler, {
