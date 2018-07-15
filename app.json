@@ -1,0 +1,27 @@
+{
+  "name": "shopify-admin-heroku",
+  "scripts": {
+    "postdeploy": "yarn postinstall"
+  },
+  "env": {
+    "SHOPIFY_APP_KEY": {
+      "required": true
+    },
+    "SHOPIFY_APP_SECRET": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [
+
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
