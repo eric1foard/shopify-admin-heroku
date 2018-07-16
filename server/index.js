@@ -1,7 +1,7 @@
 require('isomorphic-fetch');
 require('dotenv').config();
+const config = require('config');
 
-const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
@@ -10,14 +10,9 @@ const logger = require('morgan');
 
 const ShopifyAPIClient = require('shopify-api-node');
 const ShopifyExpress = require('@shopify/shopify-express');
-const {MemoryStrategy} = require('@shopify/shopify-express/strategies');
-
-const {
-  SHOPIFY_APP_KEY,
-  SHOPIFY_APP_HOST,
-  SHOPIFY_APP_SECRET,
-  NODE_ENV,
-} = process.env;
+const { MemoryStrategy } = require('@shopify/shopify-express/strategies');
+const { SHOPIFY_APP_KEY, SHOPIFY_APP_SECRET, NODE_ENV, HEROKU_APP_NAME } = process.env;
+const SHOPIFY_APP_HOST = require('../utils/env').getAppHostname(HEROKU_APP_NAME, config.get('appName'));
 
 const shopifyConfig = {
   host: SHOPIFY_APP_HOST,
@@ -47,7 +42,7 @@ const registerWebhook = function(shopDomain, accessToken, webhook) {
 }
 
 const app = express();
-const isDevelopment = require('../utils/env').isDevEnvironment(process.env.NODE_ENV);;
+const isDevelopment = require('../utils/env').isDevEnvironment(NODE_ENV);
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -65,13 +60,13 @@ app.use(
 if (isDevelopment) {
   const webpack = require('webpack');
   const webpackHotMiddleware = require('webpack-hot-middleware');
-  const config = require('../config/webpack.config.js');
+  const webpackConfig = require('../config/webpack.config.js');
   const webpackMiddleware = require('webpack-dev-middleware');
-  const compiler = webpack(config);
+  const compiler = webpack(webpackConfig);
   const middleware = webpackMiddleware(compiler, {
     hot: true,
     inline: true,
-    publicPath: config.output.publicPath,
+    publicPath: webpackConfig.output.publicPath,
     contentBase: 'src',
     stats: {
       colors: true,
