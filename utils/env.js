@@ -1,1 +1,8 @@
-module.exports.isDevEnvironment = (env) => !['staging', 'production'].includes(env);
+const isDevEnvironment = (env) => !['staging', 'production'].includes(env);
+
+const getAppHostname = (reviewAppName, appName) => `https://${reviewAppName || appName}.herokuapp.com`;
+
+module.exports = {
+    isDevEnvironment,
+    getAppHostname
+};
