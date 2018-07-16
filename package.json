@@ -6,7 +6,7 @@
     "prod": "yarn run clean && yarn run build",
     "dev": "NODE_ENV=development yarn run start-dev",
     "start-dev": "nodemon ./bin/www",
-    "start": "NODE_ENV=production node ./bin/www",
+    "start": "node ./bin/www",
     "build": "NODE_ENV=production webpack --config ./config/webpack.config.js --progress --profile --colors",
     "clean": "rm -rf ./assets && mkdir ./assets",
     "pretty": "prettier --single-quote --trailing-comma es5 --write {client,bin,config,server}{/*,/**/*}.js",
