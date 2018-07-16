@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const autoprefixer = require('autoprefixer');
 
-const isDevelopment = process.env.NODE_ENV !== 'production';
+const isDevelopment = require('../utils/env').isDevEnvironment(process.env.NODE_ENV);
 
 const sourceMap = isDevelopment;
 const plugins = isDevelopment
