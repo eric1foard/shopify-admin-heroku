@@ -73,17 +73,3 @@ The reducer uses the information in the message to progress the state of the app
 For simplicity, we included the reducer in the same file as the store configuration.
 
 `actions` are the functions that are fired from interactions with the UI.
-
-
-## Secrets
-Secrets are namespaced in K8s and need to be created on a per-environment basis. Each time a PR is opened and a review environment is created, a secret is created in GCP for that environment. An outstanding TODO item is to clean up these secrets programatically when the PR is merged.
-
-Secrets for staging & production environments do not need to be created on-the-fly because the namespace for these environments is consistent across deployments. Therefore, to generate these secrets run:
-
-`kubectl create secret generic --namespace=jx-staging shopify-creds --from-literal=app-key=$SHOPIFY_APP_KEY --from-literal=app-secret=$SHOPIFY_APP_SECRET`
-
-and
-
-`kubectl create secret generic --namespace=jx-production shopify-creds --from-literal=app-key=$SHOPIFY_APP_KEY --from-literal=app-secret=$SHOPIFY_APP_SECRET`
-
-where `$SHOPIFY_APP_KEY` and `$SHOPIFY_APP_SECRET` are, of course, these secrets.
