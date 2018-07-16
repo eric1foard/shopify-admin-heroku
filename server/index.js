@@ -47,7 +47,7 @@ const registerWebhook = function(shopDomain, accessToken, webhook) {
 }
 
 const app = express();
-const isDevelopment = NODE_ENV !== 'production';
+const isDevelopment = require('../utils/env').isDevEnvironment(process.env.NODE_ENV);;
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

@@ -1,0 +1,1 @@
+module.exports.isDevEnvironment = (env) => !['staging', 'production'].includes(env);
