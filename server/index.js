@@ -1,6 +1,7 @@
 require('isomorphic-fetch');
 require('dotenv').config();
 const config = require('config');
+const { SHOPIFY_APP_KEY, SHOPIFY_APP_SECRET, NODE_ENV, HEROKU_APP_NAME, REDIS_URL } = process.env;
 
 const express = require('express');
 const session = require('express-session');
@@ -10,16 +11,16 @@ const logger = require('morgan');
 
 const ShopifyAPIClient = require('shopify-api-node');
 const ShopifyExpress = require('@shopify/shopify-express');
-const { MemoryStrategy } = require('@shopify/shopify-express/strategies');
-const { SHOPIFY_APP_KEY, SHOPIFY_APP_SECRET, NODE_ENV, HEROKU_APP_NAME } = process.env;
+const { MemoryStrategy, RedisStrategy } = require('@shopify/shopify-express/strategies');
 const SHOPIFY_APP_HOST = require('../utils/env').getAppHostname(HEROKU_APP_NAME, config.get('appName'));
+const isDevelopment = require('../utils/env').isDevEnvironment(NODE_ENV);
 
 const shopifyConfig = {
   host: SHOPIFY_APP_HOST,
   apiKey: SHOPIFY_APP_KEY,
   secret: SHOPIFY_APP_SECRET,
   scope: ['write_orders, write_products'],
-  shopStore: new MemoryStrategy(),
+  shopStore: isDevelopment ? new MemoryStrategy() : new RedisStrategy(REDIS_URL),
   afterAuth(request, response) {
     const { session: { accessToken, shop } } = request;
 
@@ -42,14 +43,17 @@ const registerWebhook = function(shopDomain, accessToken, webhook) {
 }
 
 const app = express();
-const isDevelopment = require('../utils/env').isDevEnvironment(NODE_ENV);
+const redisOpts = {
+  client: shopifyConfig.shopStore.client,
+  logErrors: true
+};
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(
   session({
-    store: isDevelopment ? undefined : new RedisStore(),
+    store: isDevelopment ? undefined : new RedisStore(redisOpts),
     secret: SHOPIFY_APP_SECRET,
     resave: true,
     saveUninitialized: false,
