@@ -19,7 +19,9 @@
       "quantity": 1
     }
   },
-  "addons": [],
+  "addons": [
+    "heroku-redis"
+  ],
   "buildpacks": [
     {
       "url": "heroku/nodejs"
