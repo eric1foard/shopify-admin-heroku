@@ -60,34 +60,8 @@ app.use(
   })
 );
 
-// Run webpack hot reloading in dev
-if (isDevelopment) {
-  const webpack = require('webpack');
-  const webpackHotMiddleware = require('webpack-hot-middleware');
-  const webpackConfig = require('../config/webpack.config.js');
-  const webpackMiddleware = require('webpack-dev-middleware');
-  const compiler = webpack(webpackConfig);
-  const middleware = webpackMiddleware(compiler, {
-    hot: true,
-    inline: true,
-    publicPath: webpackConfig.output.publicPath,
-    contentBase: 'src',
-    stats: {
-      colors: true,
-      hash: false,
-      timings: true,
-      chunks: false,
-      chunkModules: false,
-      modules: false,
-    },
-  });
-
-  app.use(middleware);
-  app.use(webpackHotMiddleware(compiler));
-} else {
-  const staticPath = path.resolve(__dirname, '../assets');
-  app.use('/assets', express.static(staticPath));
-}
+const staticPath = path.resolve(__dirname, '../dist');
+app.use('/dist', express.static(staticPath));
 
 // Install
 app.get('/install', (req, res) => res.render('install'));

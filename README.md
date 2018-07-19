@@ -9,7 +9,7 @@ This example app uses Node, Express, Webpack, React, Redux, and Shopify/polaris
 - [x] React app using [Polaris](https://polaris.shopify.com/)
 - [x] Shopify Authentication
 - [x] Get API data from Shopify and pass it to React
-- [x] Hot reloading with Webpack
+- [x] Hot reloading with Parcel
 - [x] Example data flow with Redux and Polaris React components
 - [x] Example webhook set up
 
