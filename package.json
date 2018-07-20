@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prod": "yarn run clean && yarn run build",
-    "start-dev": "parcel watch ./client/index.js & NODE_ENV=development nodemon ./bin/www",
+    "start-dev": "NODE_ENV=development nodemon ./bin/www",
     "start": "node ./bin/www",
     "build": "parcel build ./client/index.js",
     "clean": "rm -rf ./dist",
