@@ -5,7 +5,9 @@ import ApiConsole from './components/ApiConsole'
 
 class App extends Component {
   render() {
-    const { apiKey, shopOrigin } = window;
+    // const { apiKey, shopOrigin } = window;
+    const apiKey = '1266a4cd165d4601d944a9760f2747ba',
+    shopOrigin = 'https://ericfteststore.myshopify.com';
     console.log('api key: ', apiKey);
     console.log('shopOrigin', shopOrigin);
 
