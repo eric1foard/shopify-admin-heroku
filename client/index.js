@@ -7,7 +7,7 @@ import store from '../client/store';
 import App from './App';
 
 function renderApp() {
-  console.log('STORE!!!!!!!!!', store);
+  console.log('STORE!!!!!?????', store);
   render(
     // <AppContainer>
       <Provider store={store}>
