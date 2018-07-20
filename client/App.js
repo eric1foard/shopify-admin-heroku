@@ -10,7 +10,7 @@ class App extends Component {
     console.log('shopOrigin', shopOrigin);
 
     return (
-      <AppProvider shopOrigin={shopOrigin} apiKey={apiKey}>
+      <AppProvider>
         <Page
           title="My application"
           breadcrumbs={[{ content: 'Home', url: '/foo' }]}
