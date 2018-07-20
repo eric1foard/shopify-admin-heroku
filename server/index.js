@@ -78,6 +78,7 @@ app.use('/shopify', routes);
 // Client
 app.get('/', withShop({authBaseUrl: '/shopify'}), function(request, response) {
   const { session: { shop, accessToken } } = request;
+  console.log('render app!!, ', shop, apiKey);
   response.render('app', {
     title: 'Shopify Node App',
     apiKey: shopifyConfig.apiKey,
