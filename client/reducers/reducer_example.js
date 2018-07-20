@@ -18,7 +18,7 @@ const requestFields = {
     responseBody: '',
   };
   
-  export function reducer(state = initState, action) {
+  export default function reducer(state = initState, action) {
     switch (action.type) {
       case 'UPDATE_VERB':
         return {

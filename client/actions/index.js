@@ -53,14 +53,14 @@ export function sendRequest(requestFields) {
   };
 }
 
-function requestStartAction() {
+export function requestStartAction() {
   return {
     type: 'REQUEST_START',
     payload: {},
   };
 }
 
-function requestCompleteAction(json) {
+export function requestCompleteAction(json) {
   const responseBody = JSON.stringify(json, null, 2);
 
   return {
@@ -71,7 +71,7 @@ function requestCompleteAction(json) {
   };
 }
 
-function requestErrorAction(requestError) {
+export function requestErrorAction(requestError) {
   return {
     type: 'REQUEST_ERROR',
     payload: {
