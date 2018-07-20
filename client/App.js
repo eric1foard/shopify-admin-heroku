@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Page, AppProvider } from '@shopify/polaris';
+import { Page, AppProvider, Card } from '@shopify/polaris';
 
 import ApiConsole from './components/ApiConsole'
 
@@ -10,14 +10,13 @@ class App extends Component {
     console.log('shopOrigin', shopOrigin);
 
     return (
-      <AppProvider>
-        <Page
-          title="My application"
-          breadcrumbs={[{ content: 'Home', url: '/foo' }]}
-          primaryAction={{ content: 'Add something' }}
-        >
-          <ApiConsole />
-        </Page>
+      <AppProvider shopOrigin={shopOrigin} apiKey={apiKey}>
+        <Page title="Example application">
+        <Card sectioned>
+          Insert the rest of your app here, including those components detailed
+          below, which can now communicate with the Embedded App SDK.
+        </Card>
+      </Page>
       </AppProvider>
     );
   }
