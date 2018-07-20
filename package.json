@@ -5,11 +5,12 @@
   "scripts": {
     "prod": "yarn run clean && yarn run build",
     "start-dev": "parcel watch ./client/index.js & NODE_ENV=development nodemon ./bin/www",
-    "start": "yarn run prod && node ./bin/www",
+    "start": "node ./bin/www",
     "build": "parcel build ./client/index.js",
     "clean": "rm -rf ./dist",
     "pretty": "prettier --single-quote --trailing-comma es5 --write {client,bin,config,server}{/*,/**/*}.js",
     "precommit": "yarn run pretty",
+    "postinstall": "yarn run prod",
     "test": "jest"
   },
   "engines": {
