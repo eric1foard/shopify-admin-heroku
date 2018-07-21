@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Page, AppProvider } from '@shopify/polaris';
-
-import ApiConsole from './components/ApiConsole'
+import { ResourcePicker } from '@shopify/polaris/embedded';
 
 class App extends Component {
   render() {
@@ -14,7 +13,18 @@ class App extends Component {
           breadcrumbs={[{ content: 'Home', url: '/foo' }]}
           primaryAction={{ content: 'Add something' }}
         >
-          <ApiConsole />
+          <h1>boom!</h1>
+
+          <ResourcePicker
+            products
+            allowMultiple
+            open={true}
+            onSelection={(resources) => {
+              console.log('Selected products: ', resources.products);
+              // this.setState({ open: false });
+            }}
+            // onCancel={() => this.setState({ open: false })}
+          />
         </Page>
       </AppProvider>
     );
