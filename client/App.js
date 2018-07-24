@@ -8,7 +8,7 @@ class App extends Component {
 
     return (
       <AppProvider shopOrigin={shopOrigin} apiKey={apiKey}>
-        <Page
+        {/* <Page
           title="My application"
           breadcrumbs={[{ content: 'Home', url: '/foo' }]}
           primaryAction={{ content: 'Add something' }}
@@ -26,7 +26,7 @@ class App extends Component {
             // onCancel={() => this.setState({ open: false })}
           />
           
-        </Page>
+        </Page> */}
         <Button primary>Cool button!</Button>
       </AppProvider>
     );
