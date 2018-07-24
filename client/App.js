@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Page, AppProvider } from '@shopify/polaris';
-import { ResourcePicker } from '@shopify/polaris/embedded';
+import ProductList from './containers/ProductList';
+
 
 class App extends Component {
   render() {
@@ -9,22 +10,10 @@ class App extends Component {
     return (
       <AppProvider shopOrigin={shopOrigin} apiKey={apiKey}>
         <Page
-          title="My application"
-          breadcrumbs={[{ content: 'Home', url: '/foo' }]}
-          primaryAction={{ content: 'Add something' }}
+          title='Augmented Reality Client'
+          primaryAction={{ content: 'Add Products' }}
         >
-          <h1>boom!</h1>
-
-          <ResourcePicker
-            products
-            allowMultiple
-            open={true}
-            onSelection={(resources) => {
-              console.log('Selected products: ', resources.products);
-              // this.setState({ open: false });
-            }}
-            // onCancel={() => this.setState({ open: false })}
-          />
+          <ProductList />
         </Page>
       </AppProvider>
     );
