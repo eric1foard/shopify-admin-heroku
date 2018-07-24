@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Page, AppProvider } from '@shopify/polaris';
-import { ResourcePicker } from '@shopify/polaris/embedded';
+import { ResourcePicker, Button } from '@shopify/polaris/embedded';
 
 class App extends Component {
   render() {
@@ -25,6 +25,7 @@ class App extends Component {
             }}
             // onCancel={() => this.setState({ open: false })}
           />
+          <Button>Cool button!</Button>
         </Page>
       </AppProvider>
     );
