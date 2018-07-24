@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Page, AppProvider } from '@shopify/polaris';
-import { ResourcePicker, Button } from '@shopify/polaris/embedded';
+import { Page, AppProvider, Button } from '@shopify/polaris';
+import { ResourcePicker } from '@shopify/polaris/embedded';
 
 class App extends Component {
   render() {
