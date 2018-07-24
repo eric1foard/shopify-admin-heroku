@@ -25,8 +25,9 @@ class App extends Component {
             }}
             // onCancel={() => this.setState({ open: false })}
           />
-          <Button primary>Cool button!</Button>
+          
         </Page>
+        <Button primary>Cool button!</Button>
       </AppProvider>
     );
   }
