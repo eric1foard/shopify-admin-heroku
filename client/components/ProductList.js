@@ -1,13 +1,39 @@
 import React, { Component } from 'react';
-import { EmptyState } from '@shopify/polaris';
+import { EmptyState, ResourceList, Avatar } from '@shopify/polaris';
 
 class ProductList extends Component {
   render() {
     if (!this.props.products.length) {
       return this.renderEmptyState();
     }
+    return this.renderProductList();
+  }
 
-    console.log('products!!!!', this.props.products);
+  renderProductList() {
+    return <Card>
+      <ResourceList
+        resourceName={{ singular: 'product', plural: 'products' }}
+        items={this.props.products}
+        renderItem={(item) => {
+          const { id, title, product_type } = item;
+          const media = <Avatar customer size="medium" name={title} />;
+
+          return (
+            <ResourceList.Item
+              id={id}
+              url={'https://help.shopify.com'}
+              media={media}
+              accessibilityLabel={`View details for ${title}`}
+            >
+              <h3>
+                <TextStyle variation="strong">{title}</TextStyle>
+              </h3>
+              <div>{product_type}</div>
+            </ResourceList.Item>
+          );
+        }}
+      />
+    </Card>
   }
 
   renderEmptyState() {
