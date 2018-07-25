@@ -6,6 +6,8 @@ class ProductList extends Component {
     if (!this.props.products.length) {
       return this.renderEmptyState();
     }
+
+    console.log('products!!!!', this.props.products);
   }
 
   renderEmptyState() {
