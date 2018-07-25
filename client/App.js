@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { setProductPickerOpen } from './actions/index';
+import { setProductPickerOpen, addSelectedProducts } from './actions/index';
 import { bindActionCreators } from 'redux';
 import { Page, AppProvider } from '@shopify/polaris';
 import ProductList from './components/ProductList';
@@ -19,6 +19,7 @@ class App extends Component {
         >
           <ProductList
             products={this.props.products}
+            addSelectedProducts={this.props.addSelectedProducts}
             setProductPickerOpen={this.props.setProductPickerOpen}
           />
           <ProductPicker
@@ -36,7 +37,11 @@ const mapStateToProps = ({ productPickerModalOpen, products }) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ setProductPickerOpen }, dispatch)
+  const actionCreators = {
+    setProductPickerOpen,
+    addSelectedProducts
+  };
+  return bindActionCreators(actionCreators, dispatch)
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
