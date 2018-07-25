@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { EmptyState, ResourceList, Avatar } from '@shopify/polaris';
+import { EmptyState, ResourceList, Avatar, Card } from '@shopify/polaris';
 
 class ProductList extends Component {
   render() {
