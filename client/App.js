@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { setProductPickerOpen } from './actions/index';
+import { bindActionCreators } from 'redux';
 import { Page, AppProvider } from '@shopify/polaris';
-import ProductList from './containers/ProductList';
+import ProductList from './components/ProductList';
+import ProductPicker from './components/ProductPicker';
 
 
 class App extends Component {
@@ -11,13 +15,28 @@ class App extends Component {
       <AppProvider shopOrigin={shopOrigin} apiKey={apiKey}>
         <Page
           title='Augmented Reality Client'
-          primaryAction={{ content: 'Add Products' }}
+          primaryAction={{ content: 'Add Products', onAction: () => this.props.setProductPickerOpen(true) }}
         >
-          <ProductList />
+          <ProductList
+            products={this.props.products}
+            setProductPickerOpen={this.props.setProductPickerOpen}
+          />
+          <ProductPicker
+            setProductPickerOpen={this.props.setProductPickerOpen}
+            productPickerModalOpen={this.props.productPickerModalOpen}
+          />
         </Page>
       </AppProvider>
     );
   }
 }
 
-export default App;
+const mapStateToProps = ({ productPickerModalOpen, products }) => {
+  return { productPickerModalOpen, products };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ setProductPickerOpen }, dispatch)
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
