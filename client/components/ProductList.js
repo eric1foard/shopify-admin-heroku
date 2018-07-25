@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { EmptyState, ResourceList, Avatar, Card, TextStyle } from '@shopify/polaris';
+import { EmptyState, ResourceList, Avatar, Card, TextStyle, Badge } from '@shopify/polaris';
 
 class ProductList extends Component {
   render() {
@@ -30,6 +30,8 @@ class ProductList extends Component {
                 <TextStyle variation="strong">{title}</TextStyle>
               </h3>
               <div>{product_type}</div>
+              <Badge status="attention">Low Resolution</Badge>
+              <Badge status="attention">Dimensions needed</Badge>
             </ResourceList.Item>
           );
         }}

@@ -24,7 +24,7 @@ class App extends Component {
           <ProductPicker
             setProductPickerOpen={this.props.setProductPickerOpen}
             productPickerModalOpen={this.props.productPickerModalOpen}
-            addSelectedProducts={this.props.addSelectedProducts}
+                        addSelectedProducts={this.props.addSelectedProducts}
           />
         </Page>
       </AppProvider>
