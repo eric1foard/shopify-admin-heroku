@@ -14,6 +14,7 @@ class ProductList extends Component {
       <ResourceList
         resourceName={{ singular: 'product', plural: 'products' }}
         items={this.props.products}
+        showHeader
         renderItem={(item) => {
           const { id, title, product_type } = item;
           const media = <Avatar customer size="medium" name={title} />;
