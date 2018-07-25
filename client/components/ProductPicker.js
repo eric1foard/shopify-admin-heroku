@@ -9,9 +9,11 @@ class ProductPicker extends Component {
             allowMultiple
             open={this.props.productPickerModalOpen}
             onCancel={() => this.props.setProductPickerOpen(false)}
-            onSelection={(resources) => {
-                console.log('Selected products: ', resources.products);
-                // this.setState({ open: false });
+            onSelection={({ products }) => {
+                console.log('Selected products: ', products);
+                // TODO: pass minimal payload to server to avoid slow call
+                this.props.addSelectedProducts({ products });
+                this.props.setProductPickerOpen(false);
             }}
         />
     }

@@ -1,9 +1,12 @@
+// TODO: improve directory structure of express app
 require('isomorphic-fetch');
 require('dotenv').config();
+const { AR_PRODUCT_TAG, NEEDS_DIMENSIONS_TAG, LOW_RESOLUTION_TAG } = require('../utils/constants');
 const config = require('config');
 const { SHOPIFY_APP_KEY, SHOPIFY_APP_SECRET, NODE_ENV, HEROKU_APP_NAME, REDIS_URL } = process.env;
 
 const express = require('express');
+const jsonParser = require('body-parser').json();
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
 const path = require('path');
@@ -34,6 +37,7 @@ const shopifyConfig = {
   },
 };
 
+// TODO: remove webhook example
 const registerWebhook = function(shopDomain, accessToken, webhook) {
   const shopify = new ShopifyAPIClient({ shopName: shopDomain, accessToken: accessToken });
   shopify.webhook.create(webhook).then(
@@ -83,6 +87,50 @@ app.get('/', withShop({authBaseUrl: '/shopify'}), function(request, response) {
     apiKey: shopifyConfig.apiKey,
     shop: shop,
   });
+});
+
+const enableProductsForAR = async (shopify, products) => {
+  if (!products.length) return products;
+  const p = products[0];
+  await shopify.product.update(p.id, {
+    // TODO: ensure that when product is deleted that we REMOVE these tags that are created
+    // otherwise, if customer removes and re-adds products, we will get dup tags
+    // also, should actually check if image is low res before marking it as such.
+    tags: p.tags.concat(`, ${AR_PRODUCT_TAG}, ${NEEDS_DIMENSIONS_TAG}, ${LOW_RESOLUTION_TAG}`)
+  });
+  return enableProductsForAR(shopify, products.slice(1, products.length));
+};
+
+// called when products are selected via product picker modal
+app.post('/api/products', jsonParser, async (request, response, next) => {
+  try {
+    const { session: { shop, accessToken } } = request;
+    // TODO: shopify call limits
+    const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
+    const { products } = request.body;
+
+    // identify products that are not already AR enabled
+    const targetProducts = products.filter(p => !p.tags.includes(AR_PRODUCT_TAG));
+    await enableProductsForAR(shopify, targetProducts);
+    return response.json(targetProducts);
+  }
+  catch (err) {
+    console.error('catching error', err);
+    return next(err); // TODO: is this correct error-handling behavior?
+  }
+});
+
+app.get('/api/products', async (request, response, next) => {
+  try {
+    const { session: { shop, accessToken } } = request;
+    // TODO: shopify call limits
+    const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
+    const products = await shopify.product.list();
+    const targetProducts = products.filter(p => !p.tags.includes(AR_PRODUCT_TAG));
+    return response.json(targetProducts);
+  } catch (err) {
+    return next(err);
+  }
 });
 
 app.post('/order-create', withWebhook((error, request) => {
