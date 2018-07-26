@@ -11,3 +11,10 @@ export function addSelectedProducts(products) {
         payload: products
     };
 }
+
+export function onFiltersChange(filters) {
+    return {
+        type: 'SET_FILTERS',
+        payload: filters
+    };
+}
