@@ -4,3 +4,17 @@ export function setProductPickerOpen(isOpen) {
         payload: isOpen
     };
 }
+
+export function addSelectedProducts(products) {
+    return {
+        type: 'ADD_SELECTED_PRODUCTS',
+        payload: products
+    };
+}
+
+export function onFiltersChange(filters) {
+    return {
+        type: 'SET_FILTERS',
+        payload: filters
+    };
+}
