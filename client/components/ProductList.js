@@ -25,7 +25,15 @@ const dimensionsNeededBadge = item =>
     <Badge status="attention">Dimensions needed</Badge> :
     null;
 
+const renderShortcutActions = setEditModalOpen =>
+      ['Edit', 'Delete'].map(a => ({ content: a, onAction: () => setEditModalOpen(true) }));
+
 class ProductList extends Component {
+  constructor(props) {
+    super(props);
+    this.renderItem = this.renderItem.bind(this);
+  }
+
   render() {
     if (!this.props.products.length) {
       return this.renderEmptyState();
@@ -86,6 +94,8 @@ class ProductList extends Component {
       id={id}
       media={media}
       accessibilityLabel={`View details for ${title}`}
+      shortcutActions={renderShortcutActions(this.props.setEditModalOpen)}
+      persistActions
     >
       <TextStyle variation="strong">{title}</TextStyle>
       {/* <div>{formatDimensions(dimensions)}</div> */}
