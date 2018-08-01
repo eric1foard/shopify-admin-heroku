@@ -4,11 +4,13 @@ import { bindActionCreators } from 'redux';
 import { Page, AppProvider } from '@shopify/polaris';
 import ProductList from './components/ProductList';
 import ProductPicker from './components/ProductPicker';
+import EditModal from './components/EditModal';
 import {
   setProductPickerOpen,
   addSelectedProducts,
   onFiltersChange,
-  getProducts
+  getProducts,
+  setEditModalOpen
 } from './actions/index';
 
 
@@ -31,11 +33,16 @@ class App extends Component {
             setProductPickerOpen={this.props.setProductPickerOpen}
             appliedFilters={this.props.appliedFilters}
             onFiltersChange={this.props.onFiltersChange}
+            setEditModalOpen={this.props.setEditModalOpen}
           />
           <ProductPicker
             setProductPickerOpen={this.props.setProductPickerOpen}
             productPickerModalOpen={this.props.productPickerModalOpen}
             addSelectedProducts={this.props.addSelectedProducts}
+          />
+          <EditModal
+            isEditModalOpen={this.props.isEditModalOpen}
+            setEditModalOpen={this.props.setEditModalOpen}
           />
         </Page>
       </AppProvider>
@@ -43,11 +50,12 @@ class App extends Component {
   }
 }
 
-const mapStateToProps = ({ productPickerModalOpen, products, appliedFilters }) => {
+const mapStateToProps = ({ productPickerModalOpen, products, appliedFilters, isEditModalOpen }) => {
   return {
     productPickerModalOpen,
     products,
-    appliedFilters
+    appliedFilters,
+    isEditModalOpen
   };
 };
 
@@ -56,7 +64,8 @@ const mapDispatchToProps = (dispatch) => {
     setProductPickerOpen,
     addSelectedProducts,
     onFiltersChange,
-    getProducts
+    getProducts,
+    setEditModalOpen
   };
   return bindActionCreators(actionCreators, dispatch)
 };

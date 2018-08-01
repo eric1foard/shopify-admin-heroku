@@ -25,5 +25,12 @@ export function getProducts() {
     return {
         type: 'GET_PRODUCTS',
         payload: axios.get('/api/products')
-    }
+    };
+}
+
+export function setEditModalOpen(isOpen) {
+    return {
+        type: 'OPEN_EDIT_MODAL',
+        payload: isOpen
+    };
 }
