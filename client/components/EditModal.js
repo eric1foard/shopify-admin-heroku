@@ -1,10 +1,11 @@
-import { Modal } from '@shopify/polaris/embedded';
 import React, { Component } from 'react';
+import { Modal } from '@shopify/polaris/embedded';
+import ProductEditForm from './ProductEditForm';
 
 class EditModal extends Component {
     render() {
         return <Modal
-            src="https://my-app.com/upgrade-to-retail-package"
+            // src="https://my-app.com/upgrade-to-retail-package"
             open={this.props.isEditModalOpen}
             title="Upgrade your Shopify POS with the Retail Package"
             primaryAction={{
@@ -18,7 +19,10 @@ class EditModal extends Component {
                 },
             ]}
             onClose={() => this.props.setEditModalOpen(false)}
-        />
+        // children={<ProductEditForm onSubmit={() => console.log('submitting form!!!')} />}
+        >
+            <h1>Foo!!!</h1>
+        </Modal>
     }
 }
 
