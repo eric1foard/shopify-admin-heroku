@@ -5,12 +5,14 @@ import { Page, AppProvider } from '@shopify/polaris';
 import ProductList from './components/ProductList';
 import ProductPicker from './components/ProductPicker';
 import EditModal from './components/EditModal';
+import DeleteAlert from './components/DeleteAlert';
 import {
   setProductPickerOpen,
   addSelectedProducts,
   onFiltersChange,
   getProducts,
-  setEditModalOpen
+  setEditModalOpen,
+  setDeleteAlertOpen
 } from './actions/index';
 
 
@@ -44,6 +46,10 @@ class App extends Component {
             isEditModalOpen={this.props.isEditModalOpen}
             setEditModalOpen={this.props.setEditModalOpen}
           />
+          <DeleteAlert
+            isDeleteAlertOpen={this.props.isDeleteAlertOpen}
+            setDeleteAlertOpen={this.props.setDeleteAlertOpen}
+          />
         </Page>
       </AppProvider>
     );
@@ -55,7 +61,8 @@ const mapStateToProps = ({ productPickerModalOpen, products, appliedFilters, isE
     productPickerModalOpen,
     products,
     appliedFilters,
-    isEditModalOpen
+    isEditModalOpen,
+    isDeleteAlertOpen
   };
 };
 
@@ -65,7 +72,8 @@ const mapDispatchToProps = (dispatch) => {
     addSelectedProducts,
     onFiltersChange,
     getProducts,
-    setEditModalOpen
+    setEditModalOpen,
+    setDeleteAlertOpen
   };
   return bindActionCreators(actionCreators, dispatch)
 };

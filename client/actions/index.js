@@ -34,3 +34,10 @@ export function setEditModalOpen(isOpen) {
         payload: isOpen
     };
 }
+
+export function setDeleteAlertOpen(isOpen) {
+    return {
+        type: 'OPEN_DELETE_ALERT',
+        payload: isOpen
+    };
+}
