@@ -1,5 +1,6 @@
-import { Modal } from '@shopify/polaris/embedded';
 import React, { Component } from 'react';
+import { Modal } from '@shopify/polaris/embedded';
+import ProductEditForm from './ProductEditForm';
 
 class EditModal extends Component {
     render() {
@@ -18,7 +19,9 @@ class EditModal extends Component {
                 },
             ]}
             onClose={() => this.props.setEditModalOpen(false)}
-        />
+        >
+            <ProductEditForm onSubmit={() => console.log('submitting form!!!')} />
+        </Modal>
     }
 }
 
