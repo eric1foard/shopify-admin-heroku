@@ -13,7 +13,7 @@ import {
 
 
 class App extends Component {
-  componentDidMount() {
+  componentWillMount() {
     this.props.getProducts();
   }
 
