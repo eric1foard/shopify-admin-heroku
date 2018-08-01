@@ -126,7 +126,7 @@ app.get('/api/products', async (request, response, next) => {
     // TODO: shopify call limits
     const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
     const products = await shopify.product.list();
-    const targetProducts = products.filter(p => !p.tags.includes(AR_PRODUCT_TAG));
+    const targetProducts = products.filter(p => p.tags.includes(AR_PRODUCT_TAG));
     return response.json(targetProducts);
   } catch (err) {
     return next(err);
