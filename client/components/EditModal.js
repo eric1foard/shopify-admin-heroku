@@ -19,8 +19,10 @@ class EditModal extends Component {
                 },
             ]}
             onClose={() => this.props.setEditModalOpen(false)}
-            children={<ProductEditForm onSubmit={() => console.log('submitting form!!!')} />}
-        />
+        // children={<ProductEditForm onSubmit={() => console.log('submitting form!!!')} />}
+        >
+            <h1>Foo!!!</h1>
+        </Modal>
     }
 }
 
