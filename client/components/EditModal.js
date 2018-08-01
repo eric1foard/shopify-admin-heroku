@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Modal } from '@shopify/polaris/embedded';
+import { Modal } from '@shopify/polaris';
 import ProductEditForm from './ProductEditForm';
 
 class EditModal extends Component {
