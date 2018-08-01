@@ -35,9 +35,27 @@ export function setEditModalOpen(isOpen) {
     };
 }
 
-export function setDeleteAlertOpen(isOpen) {
+export function setDeleteAlertOpen(opts) {
     return {
         type: 'OPEN_DELETE_ALERT',
-        payload: isOpen
+        payload: opts
     };
+}
+
+const deleteProduct = id => axios.delete(`/api/products/${id}`);
+
+export function updateProductsAfterDelete(id) {
+    return {
+        type: 'DELETE_PRODUCT',
+        payload: id
+    }
+}
+
+// TODO: add behavior to display modal
+export function deleteProductAndCloseModal(id) {
+    return dispatch =>
+        deleteProduct(id)
+        .then(() => dispatch(updateProductsAfterDelete(id)))
+        .then(() => dispatch(setDeleteAlertOpen({ isOpen: false, id: 0, title: '' })))
+        .catch((err) => dispatch(console.log(err)))
 }

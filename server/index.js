@@ -133,6 +133,21 @@ app.get('/api/products', async (request, response, next) => {
   }
 });
 
+app.delete('/api/products/:productId', async (request, response, next) => {
+  try {
+    const { productId } = request.params;
+    const { session: { shop, accessToken } } = request;
+    // TODO: shopify call limits
+    const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
+    const product = await shopify.product.get(productId);
+    let tags = product.tags.replace(AR_PRODUCT_TAG, '');
+    await shopify.product.update(productId, { tags });
+    return response.json({ id: productId });
+  } catch (err) {
+    return next(err);
+  }
+});
+
 app.post('/order-create', withWebhook((error, request) => {
   if (error) {
     console.error(error);
