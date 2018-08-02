@@ -57,5 +57,34 @@ export function deleteProductAndCloseModal(id) {
         deleteProduct(id)
         .then(() => dispatch(updateProductsAfterDelete(id)))
         .then(() => dispatch(setDeleteAlertOpen({ isOpen: false, id: 0, title: '' })))
-        .catch((err) => dispatch(console.log(err)))
+        .then(() => {
+            const bannerOpts = {
+                status: 'success',
+                title: 'Delete Successful',
+                message: 'Product Successfully deleted'
+            };
+            return dispatch(showBanner(bannerOpts));
+        })
+        .catch((err) => {
+            console.log(err);
+            const bannerOpts = {
+                status: 'critical',
+                title: 'Delete Failure',
+                message: 'There was a problem deleting this product. Please try again'
+            };
+            return dispatch(showBanner(bannerOpts));
+        });
+}
+
+export function showBanner(payload) {
+    return {
+        type: 'SHOW_BANNER',
+        payload
+    };
+}
+
+export function hideBanner() {
+    return {
+        type: 'HIDE_BANNER'
+    };
 }
