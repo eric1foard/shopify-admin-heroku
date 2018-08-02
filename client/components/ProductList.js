@@ -25,14 +25,14 @@ const dimensionsNeededBadge = item =>
     <Badge status="attention">Dimensions needed</Badge> :
     null;
 
-const renderShortcutActions = (setEditModalOpen, setDeleteAlertOpen) => ([
+const renderShortcutActions = (setEditModalOpen, setDeleteAlertOpen, {id, title}) => ([
   {
     content: 'Edit',
     onAction: () => setEditModalOpen(true)
   },
   {
     content: 'Delete',
-    onAction: () => setDeleteAlertOpen(true)
+    onAction: () => setDeleteAlertOpen({isOpen: true, id, title })
   }
 ]);
 
@@ -102,7 +102,7 @@ class ProductList extends Component {
       id={id}
       media={media}
       accessibilityLabel={`View details for ${title}`}
-      shortcutActions={renderShortcutActions(this.props.setEditModalOpen, this.props.setDeleteAlertOpen)}
+      shortcutActions={renderShortcutActions(this.props.setEditModalOpen, this.props.setDeleteAlertOpen, item)}
       persistActions
     >
       <TextStyle variation="strong">{title}</TextStyle>

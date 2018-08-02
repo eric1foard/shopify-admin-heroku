@@ -12,7 +12,8 @@ import {
   onFiltersChange,
   getProducts,
   setEditModalOpen,
-  setDeleteAlertOpen
+  setDeleteAlertOpen,
+  deleteProductAndCloseModal
 } from './actions/index';
 
 
@@ -36,6 +37,7 @@ class App extends Component {
             appliedFilters={this.props.appliedFilters}
             onFiltersChange={this.props.onFiltersChange}
             setEditModalOpen={this.props.setEditModalOpen}
+            setDeleteAlertOpen={this.props.setDeleteAlertOpen}
           />
           <ProductPicker
             setProductPickerOpen={this.props.setProductPickerOpen}
@@ -49,6 +51,8 @@ class App extends Component {
           <DeleteAlert
             isDeleteAlertOpen={this.props.isDeleteAlertOpen}
             setDeleteAlertOpen={this.props.setDeleteAlertOpen}
+            deleteProductOpts={this.props.deleteProductOpts}
+            deleteProductAndCloseModal={this.props.deleteProductAndCloseModal}
           />
         </Page>
       </AppProvider>
@@ -56,13 +60,14 @@ class App extends Component {
   }
 }
 
-const mapStateToProps = ({ productPickerModalOpen, products, appliedFilters, isEditModalOpen }) => {
+const mapStateToProps = ({ productPickerModalOpen, products, appliedFilters, isEditModalOpen, isDeleteAlertOpen, deleteProductOpts }) => {
   return {
     productPickerModalOpen,
     products,
     appliedFilters,
     isEditModalOpen,
-    isDeleteAlertOpen
+    isDeleteAlertOpen,
+    deleteProductOpts
   };
 };
 
@@ -73,7 +78,8 @@ const mapDispatchToProps = (dispatch) => {
     onFiltersChange,
     getProducts,
     setEditModalOpen,
-    setDeleteAlertOpen
+    setDeleteAlertOpen,
+    deleteProductAndCloseModal
   };
   return bindActionCreators(actionCreators, dispatch)
 };

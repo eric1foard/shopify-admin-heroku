@@ -28,6 +28,8 @@ export default function reducer(state = initState, action) {
   switch (action.type) {
     case 'GET_PRODUCTS':
       return action.payload.data;
+    case 'DELETE_PRODUCT':
+      return state.filter(p => p.id !== action.payload);
     case 'ADD_SELECTED_PRODUCTS':
       return state.concat(action.payload.data);
     case 'SET_FILTERS':
