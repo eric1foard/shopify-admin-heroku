@@ -1,5 +1,18 @@
 import axios from 'axios';
 
+export function showBanner(payload) {
+    return {
+        type: 'SHOW_BANNER',
+        payload
+    };
+}
+
+export function hideBanner() {
+    return {
+        type: 'HIDE_BANNER'
+    };
+}
+
 export function setProductPickerOpen(isOpen) {
     return {
         type: 'SET_PICKER_MODAL_STATE',
@@ -7,11 +20,36 @@ export function setProductPickerOpen(isOpen) {
     };
 }
 
-export function addSelectedProducts(products) {
+const addProducts = products => axios.post('/api/products', products);
+
+export function productsAddedSuccess(products) {
     return {
         type: 'ADD_SELECTED_PRODUCTS',
-        payload: axios.post('/api/products', products)
+        payload: products
     };
+}
+
+export function addSelectedProducts(products) {
+    return dispatch =>
+        addProducts(products)
+        .then(() => dispatch(productsAddedSuccess(products)))
+        .then(() => {
+            const bannerOpts = {
+                status: 'success',
+                title: 'Products added',
+                message: 'The products you selected are now enabled for viewing in AR'
+            };
+            return dispatch(showBanner(bannerOpts));
+        })
+        .catch((err) => {
+            console.log(err);
+            const bannerOpts = {
+                status: 'critical',
+                title: 'Products could not be added',
+                message: 'There was a problem adding these products. Please try again'
+            };
+            return dispatch(showBanner(bannerOpts));
+        });
 }
 
 export function onFiltersChange(filters) {
@@ -25,13 +63,6 @@ export function getProducts() {
     return {
         type: 'GET_PRODUCTS',
         payload: axios.get('/api/products')
-    };
-}
-
-export function setEditModalOpen(isOpen) {
-    return {
-        type: 'OPEN_EDIT_MODAL',
-        payload: isOpen
     };
 }
 
@@ -74,17 +105,4 @@ export function deleteProductAndCloseModal(id) {
             };
             return dispatch(showBanner(bannerOpts));
         });
-}
-
-export function showBanner(payload) {
-    return {
-        type: 'SHOW_BANNER',
-        payload
-    };
-}
-
-export function hideBanner() {
-    return {
-        type: 'HIDE_BANNER'
-    };
 }
