@@ -25,10 +25,10 @@ const dimensionsNeededBadge = item =>
     <Badge status="attention">Dimensions needed</Badge> :
     null;
 
-const renderShortcutActions = (setEditModalOpen, setDeleteAlertOpen, {id, title}) => ([
+const renderShortcutActions = (setDeleteAlertOpen, history, {id, title}) => ([
   {
     content: 'Edit',
-    onAction: () => setEditModalOpen(true)
+    onAction: () => history.push(`/products/${id}`)
   },
   {
     content: 'Delete',
@@ -53,7 +53,7 @@ class ProductList extends Component {
     return <EmptyState
       heading="Add products for viewing in augmented reality"
       action={{ content: 'Add products', onAction: () => this.props.setProductPickerOpen(true) }}
-      secondaryAction={{ content: 'Learn more', url: 'https://help.shopify.com' }}
+      secondaryAction={{ content: 'Learn more', to: '/foo' }}
       image="https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg"
     >
       <p>Manage which products are visible to your customers in the augmented reality client.</p>
@@ -102,7 +102,7 @@ class ProductList extends Component {
       id={id}
       media={media}
       accessibilityLabel={`View details for ${title}`}
-      shortcutActions={renderShortcutActions(this.props.setEditModalOpen, this.props.setDeleteAlertOpen, item)}
+      shortcutActions={renderShortcutActions(this.props.setDeleteAlertOpen, this.props.history, item)}
       persistActions
     >
       <TextStyle variation="strong">{title}</TextStyle>

@@ -13,7 +13,6 @@ class ProductPicker extends Component {
                 console.log('Selected products: ', products);
                 // TODO: pass minimal payload to server to avoid slow call
                 this.props.addSelectedProducts({ products });
-                this.props.setProductPickerOpen(false);
             }}
         />
     }

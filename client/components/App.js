@@ -2,25 +2,30 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Page, AppProvider } from '@shopify/polaris';
-import ProductList from './components/ProductList';
-import ProductPicker from './components/ProductPicker';
-import EditModal from './components/EditModal';
-import DeleteAlert from './components/DeleteAlert';
-import StatusBanner from './components/StatusBanner';
+import { BrowserRouter as Router, Route } from "react-router-dom";
+import ProductList from './ProductList';
+import ProductPicker from './ProductPicker';
+import DeleteAlert from './DeleteAlert';
+import EditView from './EditView';
+import StatusBanner from './StatusBanner';
 import {
   setProductPickerOpen,
   addSelectedProducts,
   onFiltersChange,
   getProducts,
-  setEditModalOpen,
   setDeleteAlertOpen,
   deleteProductAndCloseModal,
   showBanner,
   hideBanner
-} from './actions/index';
+} from '../actions/index';
 
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.renderProductList = this.renderProductList.bind(this);
+  }
+
   componentWillMount() {
     this.props.getProducts();
   }
@@ -29,7 +34,10 @@ class App extends Component {
     const { apiKey, shopOrigin } = window;
 
     return (
-      <AppProvider shopOrigin={shopOrigin} apiKey={apiKey}>
+      <AppProvider
+        shopOrigin={shopOrigin}
+        apiKey={apiKey}
+      >
         <Page
           title='Augmented Reality Client'
           primaryAction={{ content: 'Add Products', onAction: () => this.props.setProductPickerOpen(true) }}
@@ -41,22 +49,10 @@ class App extends Component {
             message={this.props.banner.message}
             hideBanner={this.props.hideBanner}
           />
-          <ProductList
-            products={this.props.products}
-            setProductPickerOpen={this.props.setProductPickerOpen}
-            appliedFilters={this.props.appliedFilters}
-            onFiltersChange={this.props.onFiltersChange}
-            setEditModalOpen={this.props.setEditModalOpen}
-            setDeleteAlertOpen={this.props.setDeleteAlertOpen}
-          />
           <ProductPicker
             setProductPickerOpen={this.props.setProductPickerOpen}
             productPickerModalOpen={this.props.productPickerModalOpen}
             addSelectedProducts={this.props.addSelectedProducts}
-          />
-          <EditModal
-            isEditModalOpen={this.props.isEditModalOpen}
-            setEditModalOpen={this.props.setEditModalOpen}
           />
           <DeleteAlert
             isDeleteAlertOpen={this.props.isDeleteAlertOpen}
@@ -64,9 +60,27 @@ class App extends Component {
             deleteProductOpts={this.props.deleteProductOpts}
             deleteProductAndCloseModal={this.props.deleteProductAndCloseModal}
           />
+          <Router>
+            <div>
+              <Route exact path="/" render={(props) => this.renderProductList(props)} />
+              <Route path="/products/:productId" component={EditView} />
+              <Route path="/foo" component={EditView} />
+            </div>
+          </Router>
         </Page>
       </AppProvider>
     );
+  }
+
+  renderProductList(routerProps) {
+    return <ProductList
+    {...routerProps}
+    products={this.props.products}
+    setProductPickerOpen={this.props.setProductPickerOpen}
+    appliedFilters={this.props.appliedFilters}
+    onFiltersChange={this.props.onFiltersChange}
+    setDeleteAlertOpen={this.props.setDeleteAlertOpen}
+  />
   }
 }
 
@@ -74,7 +88,6 @@ const mapStateToProps = (
   { productPickerModalOpen,
     products,
     appliedFilters,
-    isEditModalOpen,
     isDeleteAlertOpen,
     deleteProductOpts,
     banner
@@ -84,7 +97,6 @@ const mapStateToProps = (
     productPickerModalOpen,
     products,
     appliedFilters,
-    isEditModalOpen,
     isDeleteAlertOpen,
     deleteProductOpts,
     banner
@@ -97,7 +109,6 @@ const mapDispatchToProps = (dispatch) => {
     addSelectedProducts,
     onFiltersChange,
     getProducts,
-    setEditModalOpen,
     setDeleteAlertOpen,
     deleteProductAndCloseModal,
     showBanner,
