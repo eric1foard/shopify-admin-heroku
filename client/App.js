@@ -6,6 +6,7 @@ import ProductList from './components/ProductList';
 import ProductPicker from './components/ProductPicker';
 import EditModal from './components/EditModal';
 import DeleteAlert from './components/DeleteAlert';
+import StatusBanner from './components/StatusBanner';
 import {
   setProductPickerOpen,
   addSelectedProducts,
@@ -13,7 +14,9 @@ import {
   getProducts,
   setEditModalOpen,
   setDeleteAlertOpen,
-  deleteProductAndCloseModal
+  deleteProductAndCloseModal,
+  showBanner,
+  hideBanner
 } from './actions/index';
 
 
@@ -31,6 +34,13 @@ class App extends Component {
           title='Augmented Reality Client'
           primaryAction={{ content: 'Add Products', onAction: () => this.props.setProductPickerOpen(true) }}
         >
+          <StatusBanner
+            visible={this.props.banner.visible}
+            status={this.props.banner.status}
+            title={this.props.banner.title}
+            message={this.props.banner.message}
+            hideBanner={this.props.hideBanner}
+          />
           <ProductList
             products={this.props.products}
             setProductPickerOpen={this.props.setProductPickerOpen}
@@ -60,14 +70,24 @@ class App extends Component {
   }
 }
 
-const mapStateToProps = ({ productPickerModalOpen, products, appliedFilters, isEditModalOpen, isDeleteAlertOpen, deleteProductOpts }) => {
+const mapStateToProps = (
+  { productPickerModalOpen,
+    products,
+    appliedFilters,
+    isEditModalOpen,
+    isDeleteAlertOpen,
+    deleteProductOpts,
+    banner
+  }
+) => {
   return {
     productPickerModalOpen,
     products,
     appliedFilters,
     isEditModalOpen,
     isDeleteAlertOpen,
-    deleteProductOpts
+    deleteProductOpts,
+    banner
   };
 };
 
@@ -79,7 +99,9 @@ const mapDispatchToProps = (dispatch) => {
     getProducts,
     setEditModalOpen,
     setDeleteAlertOpen,
-    deleteProductAndCloseModal
+    deleteProductAndCloseModal,
+    showBanner,
+    hideBanner
   };
   return bindActionCreators(actionCreators, dispatch)
 };

@@ -5,6 +5,7 @@ import filtersReducer from './reducer_filters';
 import editModalReducer from './reducer_edit_modal';
 import deleteAlertReducer from './reducer_delete_alert';
 import deleteProductOptsReducer from './reducer_delete_product_opts';
+import bannerReducer from './reducer_banner';
 
 const rootReducer = combineReducers({
   products: productsReducer,
@@ -12,7 +13,8 @@ const rootReducer = combineReducers({
   appliedFilters: filtersReducer,
   isEditModalOpen: editModalReducer,
   isDeleteAlertOpen: deleteAlertReducer,
-  deleteProductOpts: deleteProductOptsReducer
+  deleteProductOpts: deleteProductOptsReducer,
+  banner: bannerReducer
 });
 
 export default rootReducer;
