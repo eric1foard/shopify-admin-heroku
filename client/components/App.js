@@ -8,16 +8,7 @@ import ProductPicker from './ProductPicker';
 import DeleteAlert from './DeleteAlert';
 import EditView from './EditView';
 import StatusBanner from './StatusBanner';
-import {
-  setProductPickerOpen,
-  addSelectedProducts,
-  onFiltersChange,
-  getProducts,
-  setDeleteAlertOpen,
-  deleteProductAndCloseModal,
-  showBanner,
-  hideBanner
-} from '../actions/index';
+import * as Actions from '../actions/index';
 
 
 class App extends Component {
@@ -63,8 +54,7 @@ class App extends Component {
           <Router>
             <div>
               <Route exact path="/" render={(props) => this.renderProductList(props)} />
-              <Route path="/products/:productId" component={EditView} />
-              <Route path="/foo" component={EditView} />
+              <Route path="/products/:productId" render={({ match }) => this.renderEditView(match.params.productId)} />
             </div>
           </Router>
         </Page>
@@ -82,39 +72,20 @@ class App extends Component {
     setDeleteAlertOpen={this.props.setDeleteAlertOpen}
   />
   }
+
+  // TODO: make products an object instead of array
+  renderEditView(productId) {
+    return <EditView
+      handleSubmit={this.props.saveEditForm}
+      product={this.props.products.find(p => p.id == productId)}
+    />
+  }
 }
 
-const mapStateToProps = (
-  { productPickerModalOpen,
-    products,
-    appliedFilters,
-    isDeleteAlertOpen,
-    deleteProductOpts,
-    banner
-  }
-) => {
-  return {
-    productPickerModalOpen,
-    products,
-    appliedFilters,
-    isDeleteAlertOpen,
-    deleteProductOpts,
-    banner
-  };
-};
+const mapStateToProps = (state) => ({...state});
 
 const mapDispatchToProps = (dispatch) => {
-  const actionCreators = {
-    setProductPickerOpen,
-    addSelectedProducts,
-    onFiltersChange,
-    getProducts,
-    setDeleteAlertOpen,
-    deleteProductAndCloseModal,
-    showBanner,
-    hideBanner
-  };
-  return bindActionCreators(actionCreators, dispatch)
+  return bindActionCreators({...Actions}, dispatch)
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
