@@ -106,3 +106,11 @@ export function deleteProductAndCloseModal(id) {
             return dispatch(showBanner(bannerOpts));
         });
 }
+
+export function saveEditForm(event) {
+    console.log('from saveEditForm!!!!', event);
+    return {
+        type: 'EDIT_FORM_SAVE',
+        payload: event
+    };
+}

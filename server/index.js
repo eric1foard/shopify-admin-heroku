@@ -101,6 +101,18 @@ const enableProductsForAR = async (shopify, products) => {
   return enableProductsForAR(shopify, products.slice(1, products.length));
 };
 
+const getProductMetafields = async (shopify, products, pos) => {
+  if (pos === products.length) {
+    console.log('terminating....');
+    return products;
+  }
+  const p = products[pos];
+  console.log('calling for meta with id ', p.id);
+  const metas = await shopify.metafield.list({ metafield: { owner_resource: 'product', owner_id: p.id } });
+  p.metafields = metas;
+  return getProductMetafields(shopify, products, pos+1);
+}
+
 // called when products are selected via product picker modal
 app.post('/api/products', jsonParser, async (request, response, next) => {
   try {
@@ -126,8 +138,11 @@ app.get('/api/products', async (request, response, next) => {
     // TODO: shopify call limits
     const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
     const products = await shopify.product.list();
+    console.log('get product list...', products);
     const targetProducts = products.filter(p => p.tags.includes(AR_PRODUCT_TAG));
-    return response.json(targetProducts);
+    const targetProductsWithMetaFields = await getProductMetafields(shopify, targetProducts, 0);
+    console.log('get product list with metafields...', targetProductsWithMetaFields);
+    return response.json(targetProductsWithMetaFields);
   } catch (err) {
     return next(err);
   }
