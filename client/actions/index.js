@@ -107,10 +107,35 @@ export function deleteProductAndCloseModal(id) {
         });
 }
 
-export function saveEditForm(event) {
-    console.log('from saveEditForm!!!!', event);
+export function updateProductAfterSaveEditForm(id, payload) {
     return {
         type: 'EDIT_FORM_SAVE',
-        payload: event
+        id,
+        payload
     };
+}
+
+const updateProduct = (id, payload) => axios.patch(`/api/products/${id}`, payload);
+
+export function saveEditForm(productId, payload) {
+    return dispatch =>
+        updateProduct(productId, payload)
+        .then((metafields) => dispatch(updateProductAfterSaveEditForm(productId, metafields)))
+        .then(() => {
+            const bannerOpts = {
+                status: 'success',
+                title: 'Updated successful',
+                message: 'Product Successfully updated'
+            };
+            return dispatch(showBanner(bannerOpts));
+        })
+        .catch((err) => {
+            console.log(err);
+            const bannerOpts = {
+                status: 'critical',
+                title: 'Update Failure',
+                message: 'There was a problem updating this product. Please try again'
+            };
+            return dispatch(showBanner(bannerOpts));
+        });
 }

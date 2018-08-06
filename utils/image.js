@@ -1,8 +1,5 @@
-export function hasValidDimensions(dim) {
-    return dim && dim.width && dim.height &&
-    typeof dim.width === 'number' &&
-    typeof dim.height === 'number' &&
-    dim.width > 0 && dim.height > 0;
+export function hasValidDimensions(height, width) {
+    return Boolean(height && width);
 }
 
 export function isLowResolution(image) {

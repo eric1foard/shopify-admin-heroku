@@ -9,10 +9,12 @@ import {
   FilterType
 } from '@shopify/polaris';
 import { hasValidDimensions, isLowResolution } from '../../utils/image';
+import { resolveMetafield } from '../../utils/metafields';
 
-const formatDimensions = dim =>
-  hasValidDimensions(dim) ?
-    <TextStyle variation="subdued">{dim.width}" x {dim.height}"</TextStyle> :
+
+const formatDimensions = (height, width) =>
+  hasValidDimensions(height, width) ?
+    <TextStyle variation="subdued">{width}" x {height}"</TextStyle> :
     null;
 
 const lowResolutionBadge = image =>
@@ -20,8 +22,8 @@ const lowResolutionBadge = image =>
     <Badge status="attention">Low Resolution</Badge> :
     null;
 
-const dimensionsNeededBadge = item =>
-  !hasValidDimensions(item.dimensions) ?
+const dimensionsNeededBadge = (height, width) =>
+  !hasValidDimensions(height, width) ?
     <Badge status="attention">Dimensions needed</Badge> :
     null;
 
@@ -96,8 +98,11 @@ class ProductList extends Component {
   }
 
   renderItem(item) {
-    const { id, title, image, dimensions } = item;
+    const { id, title, image, metafields } = item;
+    const height = resolveMetafield(metafields, 'height', '');
+    const width = resolveMetafield(metafields, 'width', '');
     const media = <Avatar size="medium" url={image && image.src || ''} />;
+
     return <ResourceList.Item
       id={id}
       media={media}
@@ -106,9 +111,9 @@ class ProductList extends Component {
       persistActions
     >
       <TextStyle variation="strong">{title}</TextStyle>
-      {/* <div>{formatDimensions(dimensions)}</div> */}
+      <div>{formatDimensions(height, width)}</div>
       <div>{lowResolutionBadge(image)}</div>
-      <div>{dimensionsNeededBadge(item)}</div>
+      <div>{dimensionsNeededBadge(height, width)}</div>
     </ResourceList.Item>;
   }
 }

@@ -3,8 +3,8 @@ import { Field, reduxForm } from 'redux-form'
 import { connect } from 'react-redux';
 import { Form, FormLayout, Layout, Card, TextField, Button } from '@shopify/polaris';
 import ImageUpload from './ImageUpload';
-
-const METAFIELD_NS = 'AUG-REALITY-CLIENT';
+import { resolveMetafield } from '../../utils/metafields';
+import { ACCEPTED_FILETYPES } from '../../utils/constants';
 
 const renderTextField = ({
   input,
@@ -18,12 +18,41 @@ const renderTextField = ({
     {...input}
     {...custom}
   />
-)
+);
+
+const validate = values => {
+  const { height, width, image } = values,
+  errors = {},
+  ZERO = '0';
+
+  if (height === ZERO) {
+    errors.height = 'Height cannot be 0'
+  } else if (!height) {
+    errors.height = 'Height is required';
+  }
+  if (width === ZERO) {
+    errors.width = 'Width cannot be 0'
+  } else if (!width) {
+    errors.width = 'Width is required';
+  }
+  
+  if (image) {
+    const { name } = image;
+    const dotPos = name.lastIndexOf('.');
+    if (dotPos < 0) error.image = true;
+    const ftype = name.slice(dotPos, name.length).toLowerCase();
+    if (!ACCEPTED_FILETYPES.includes(ftype)) {
+      errors.image = true;
+    }
+    
+  }
+  return errors;
+};
 
 class EditView extends Component {
   render() {
     return (
-      <Form onSubmit={() => this.props.handleSubmit()}>
+      <Form onSubmit={this.props.handleSubmit}>
         <Layout.AnnotatedSection
           title="Product image"
           // TODO: description of how to upload a good photo with no borders
@@ -51,30 +80,29 @@ class EditView extends Component {
   }
 
   // TODO: show image if it is available
-  renderImageCardContent(ARImage, title) {
+  renderImageCardContent() {
     // if (ARImage.src) {
     //   //TODO: provide alt based on product name
     //   return <img src={ARImage.src} alt={title} />;
     // }
-    return <ImageUpload />;
+    return <Field name="image" label="Image" component={ImageUpload} type="file" />;
   }
 }
-
-const resolveMetafield = (metafields, key, defaultVal) => {
-  const targetMetafield = metafields.find(m => m.namepace === METAFIELD_NS && m.key === key);
-  return targetMetafield ? targetMetafield.value : defaultVal;
-};
 
 const mapStateToProps = (state, ownProps) => {
   const metafields = ownProps.product.metafields;
   return {
     initialValues: {
-      height: resolveMetafield(metafields, 'height', 0),
-      width: resolveMetafield(metafields, 'height', 0)
+      height: resolveMetafield(metafields, 'height', ''),
+      width: resolveMetafield(metafields, 'width', ''),
+      image: resolveMetafield(metafields, 'image', null)
     }
   }
 };
 
-EditView = reduxForm({ form: 'product-edit' })(EditView);
+EditView = reduxForm({
+  form: 'product-edit',
+  validate
+})(EditView);
 EditView  = connect(mapStateToProps)(EditView);
 export default EditView;
