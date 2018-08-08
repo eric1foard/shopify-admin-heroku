@@ -99,8 +99,8 @@ class ProductList extends Component {
 
   renderItem(item) {
     const { id, title, image, metafields } = item;
-    const height = resolveMetafield(metafields, 'height', '');
-    const width = resolveMetafield(metafields, 'width', '');
+    const height = resolveMetafield(metafields, 'height', '').value;
+    const width = resolveMetafield(metafields, 'width', '').value;
     const media = <Avatar size="medium" url={image && image.src || ''} />;
 
     return <ResourceList.Item

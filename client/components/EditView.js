@@ -36,6 +36,7 @@ const validate = values => {
     errors.width = 'Width is required';
   }
   
+  // TODO: eventually, I should validate image dimension here
   if (image) {
     const { name } = image;
     const dotPos = name.lastIndexOf('.');
@@ -93,9 +94,9 @@ const mapStateToProps = (state, ownProps) => {
   const metafields = ownProps.product.metafields;
   return {
     initialValues: {
-      height: resolveMetafield(metafields, 'height', ''),
-      width: resolveMetafield(metafields, 'width', ''),
-      image: resolveMetafield(metafields, 'image', null)
+      height: resolveMetafield(metafields, 'height', '').value,
+      width: resolveMetafield(metafields, 'width', '').value,
+      image: resolveMetafield(metafields, 'image', null).value
     }
   }
 };

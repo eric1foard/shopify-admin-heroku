@@ -6,6 +6,7 @@ export default function reducer(state = [], action) {
     case 'DELETE_PRODUCT':
       return state.filter(p => p.id !== action.payload);
     case 'ADD_SELECTED_PRODUCTS':
+      // TODO: need to call out for metadata in case the product has been added before
       return state.concat(action.payload.products.map(p => ({ ...p, metafields: [] })));
     case 'EDIT_FORM_SAVE':
       console.log('from EDIT_FORM_SAVE', action);
