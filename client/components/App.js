@@ -76,7 +76,7 @@ class App extends Component {
   // TODO: make products an object instead of array
   renderEditView(productId) {
     return <EditView
-      handleSubmit={this.props.saveEditForm}
+      onSubmit={values => this.props.saveEditForm(productId, values)}
       product={this.props.products.find(p => p.id == productId)}
     />
   }

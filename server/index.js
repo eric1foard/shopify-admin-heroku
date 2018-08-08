@@ -1,7 +1,8 @@
 // TODO: improve directory structure of express app
 require('isomorphic-fetch');
 require('dotenv').config();
-const { AR_PRODUCT_TAG, NEEDS_DIMENSIONS_TAG, LOW_RESOLUTION_TAG } = require('../utils/constants');
+const { AR_PRODUCT_TAG, METAFIELD_NS } = require('../utils/constants');
+const { resolveMetafield } = require('../utils/metafields');
 const config = require('config');
 const { SHOPIFY_APP_KEY, SHOPIFY_APP_SECRET, NODE_ENV, HEROKU_APP_NAME, REDIS_URL } = process.env;
 
@@ -96,21 +97,27 @@ const enableProductsForAR = async (shopify, products) => {
     // TODO: ensure that when product is deleted that we REMOVE these tags that are created
     // otherwise, if customer removes and re-adds products, we will get dup tags
     // also, should actually check if image is low res before marking it as such.
-    tags: p.tags.concat(`, ${AR_PRODUCT_TAG}, ${NEEDS_DIMENSIONS_TAG}, ${LOW_RESOLUTION_TAG}`)
+    tags: p.tags.concat(`, ${AR_PRODUCT_TAG}`)
   });
   return enableProductsForAR(shopify, products.slice(1, products.length));
 };
 
-const getProductMetafields = async (shopify, products, pos) => {
-  if (pos === products.length) {
-    console.log('terminating....');
-    return products;
+const getProductMetafieldsOne = (id, shopify) => {
+  const opts = {
+    metafield: {
+      owner_resource: 'product',
+      owner_id: id,
+      namespace: METAFIELD_NS
+    }
   }
+  return shopify.metafield.list(opts);
+}
+
+const getProductMetafieldsAll = async (shopify, products, pos) => {
+  if (pos === products.length) return products;
   const p = products[pos];
-  console.log('calling for meta with id ', p.id);
-  const metas = await shopify.metafield.list({ metafield: { owner_resource: 'product', owner_id: p.id } });
-  p.metafields = metas;
-  return getProductMetafields(shopify, products, pos+1);
+  p.metafields = await getProductMetafieldsOne(p.id, shopify); // TODO: what if reject?
+  return getProductMetafieldsAll(shopify, products, pos+1);
 }
 
 // called when products are selected via product picker modal
@@ -140,7 +147,7 @@ app.get('/api/products', async (request, response, next) => {
     const products = await shopify.product.list();
     console.log('get product list...', products);
     const targetProducts = products.filter(p => p.tags.includes(AR_PRODUCT_TAG));
-    const targetProductsWithMetaFields = await getProductMetafields(shopify, targetProducts, 0);
+    const targetProductsWithMetaFields = await getProductMetafieldsAll(shopify, targetProducts, 0);
     console.log('get product list with metafields...', targetProductsWithMetaFields);
     return response.json(targetProductsWithMetaFields);
   } catch (err) {
@@ -158,6 +165,45 @@ app.delete('/api/products/:productId', async (request, response, next) => {
     let tags = product.tags.replace(AR_PRODUCT_TAG, '');
     await shopify.product.update(productId, { tags });
     return response.json({ id: productId });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+const upsertMetafield = (currMetafields, key, value, shopify, productId) => {
+  const targetMetafield = resolveMetafield(currMetafields, key, '');
+  console.log('in upsert targetMetafield', targetMetafield, key, value, productId);
+  if (targetMetafield && targetMetafield.value === value) { // target metafield exists and requires no update
+    return Promise.resolve(targetMetafield);
+  } else if (targetMetafield) { // target metafield exists but requires update
+    return shopify.metafield.update(targetMetafield.id, { value, value_type: 'string' })
+  } else { // target metafield does not exist, create it
+    return shopify.metafield.create({
+      key,
+      value,
+      value_type: 'string',
+      namespace: METAFIELD_NS,
+      owner_resource: 'product',
+      owner_id: productId
+    });
+  }
+};
+
+app.patch('/api/products/:productId', jsonParser, async (request, response, next) => {
+  try {
+    console.log('in patch....');
+    const { productId } = request.params;
+    const { height, width } = request.body;
+    const { session: { shop, accessToken } } = request;
+    // TODO: shopify call limits
+    const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
+    let currMetafields = await getProductMetafieldsOne(productId, shopify);
+    await Promise.all([
+      upsertMetafield(currMetafields, 'height', height, shopify, productId),
+      upsertMetafield(currMetafields, 'width', width, shopify, productId)
+    ]);
+    currMetafields = await getProductMetafieldsOne(productId, shopify); // TODO: should I skip making this call for perf?
+    return await response.json(currMetafields);
   } catch (err) {
     return next(err);
   }
