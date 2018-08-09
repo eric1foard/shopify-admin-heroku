@@ -125,7 +125,6 @@ const updateProduct = (id, payload) => {
 };
 
 export function saveEditForm(productId, payload) {
-    console.log('saveEditForm!!!! ', payload);
     return dispatch =>
         updateProduct(productId, payload)
         .then((metafields) => dispatch(updateProductAfterSaveEditForm(productId, metafields)))

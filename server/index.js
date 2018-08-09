@@ -172,7 +172,6 @@ app.delete('/api/products/:productId', async (request, response, next) => {
 });
 
 const upsertMetafield = (currMetafields, key, value, shopify, productId) => {
-  console.log('in upsertMetafield...', key, value)
   const targetMetafield = resolveMetafield(currMetafields, key, '');
   if (targetMetafield.value === value) { // target metafield exists and requires no update
     return Promise.resolve(targetMetafield);
@@ -208,7 +207,6 @@ app.patch('/api/products/:productId', multer.single('image'), async (request, re
       body: { height, width },
       file
     } = request;
-    console.log('file!!!!!!!!!', file);
     // TODO: shopify call limits
     const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
     let currMetafields = await getProductMetafieldsOne(productId, shopify);
