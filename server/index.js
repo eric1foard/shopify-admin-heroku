@@ -4,10 +4,12 @@ require('dotenv').config();
 const { AR_PRODUCT_TAG, METAFIELD_NS } = require('../utils/constants');
 const { resolveMetafield } = require('../utils/metafields');
 const config = require('config');
+const cloudFrontHostname = config.get('cloudFrontHostname');
 const { SHOPIFY_APP_KEY, SHOPIFY_APP_SECRET, NODE_ENV, HEROKU_APP_NAME, REDIS_URL } = process.env;
 
 const express = require('express');
 const jsonParser = require('body-parser').json();
+const multer = require('multer')({ dest: 'uploads/' });
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
 const path = require('path');
@@ -18,6 +20,7 @@ const ShopifyExpress = require('@shopify/shopify-express');
 const { MemoryStrategy, RedisStrategy } = require('@shopify/shopify-express/strategies');
 const SHOPIFY_APP_HOST = require('../utils/env').getAppHostname(HEROKU_APP_NAME, config.get('appName'));
 const isDevelopment = require('../utils/env').isDevEnvironment(NODE_ENV);
+const { s3PutObject } = require('./lib/s3');
 
 const shopifyConfig = {
   host: SHOPIFY_APP_HOST,
@@ -145,10 +148,8 @@ app.get('/api/products', async (request, response, next) => {
     // TODO: shopify call limits
     const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
     const products = await shopify.product.list();
-    console.log('get product list...', products);
     const targetProducts = products.filter(p => p.tags.includes(AR_PRODUCT_TAG));
     const targetProductsWithMetaFields = await getProductMetafieldsAll(shopify, targetProducts, 0);
-    console.log('get product list with metafields...', targetProductsWithMetaFields);
     return response.json(targetProductsWithMetaFields);
   } catch (err) {
     return next(err);
@@ -172,10 +173,9 @@ app.delete('/api/products/:productId', async (request, response, next) => {
 
 const upsertMetafield = (currMetafields, key, value, shopify, productId) => {
   const targetMetafield = resolveMetafield(currMetafields, key, '');
-  console.log('in upsert targetMetafield', targetMetafield, key, value, productId);
-  if (targetMetafield && targetMetafield.value === value) { // target metafield exists and requires no update
+  if (targetMetafield.value === value) { // target metafield exists and requires no update
     return Promise.resolve(targetMetafield);
-  } else if (targetMetafield) { // target metafield exists but requires update
+  } else if (targetMetafield.id) { // target metafield exists but requires update
     return shopify.metafield.update(targetMetafield.id, { value, value_type: 'string' })
   } else { // target metafield does not exist, create it
     return shopify.metafield.create({
@@ -189,22 +189,37 @@ const upsertMetafield = (currMetafields, key, value, shopify, productId) => {
   }
 };
 
-app.patch('/api/products/:productId', jsonParser, async (request, response, next) => {
+const upsertProductPhoto = (metafields, file, shopify, productId, shopName) => {
+  // TODO: do I need to include image name specified by customer in the s3 object name?
+  const s3ObjectName = `${shopName}/${productId}`;
+  return s3PutObject(s3ObjectName, file)
+  .then(() => {
+    const cfurl = `${cloudFrontHostname}/${s3ObjectName}`;
+    return upsertMetafield(metafields, 'image', cfurl, shopify, productId)
+  })
+};
+
+app.patch('/api/products/:productId', multer.single('image'), async (request, response, next) => {
   try {
-    console.log('in patch....');
-    const { productId } = request.params;
-    const { height, width } = request.body;
-    const { session: { shop, accessToken } } = request;
+    const {
+      session: { shop, accessToken },
+      params: { productId },
+      body: { height, width },
+      file
+    } = request;
     // TODO: shopify call limits
     const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
     let currMetafields = await getProductMetafieldsOne(productId, shopify);
+
     await Promise.all([
       upsertMetafield(currMetafields, 'height', height, shopify, productId),
-      upsertMetafield(currMetafields, 'width', width, shopify, productId)
+      upsertMetafield(currMetafields, 'width', width, shopify, productId),
+      upsertProductPhoto(currMetafields, file, shopify, productId, shop)
     ]);
     currMetafields = await getProductMetafieldsOne(productId, shopify); // TODO: should I skip making this call for perf?
     return await response.json(currMetafields);
   } catch (err) {
+    console.log('err caught in patch ', err);
     return next(err);
   }
 });
