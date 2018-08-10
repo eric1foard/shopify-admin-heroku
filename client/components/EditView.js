@@ -3,7 +3,6 @@ import { Field, reduxForm } from 'redux-form'
 import { connect } from 'react-redux';
 import { Form, FormLayout, Layout, Card, TextField, Button } from '@shopify/polaris';
 import ImageUpload from './ImageUpload';
-import { resolveMetafield } from '../../utils/metafields';
 import { ACCEPTED_FILETYPES } from '../../utils/constants';
 
 const renderTextField = ({
@@ -93,12 +92,12 @@ class EditView extends Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  const metafields = ownProps.product.metafields;
+  const { height, width, image } = ownProps.product;
   return {
     initialValues: {
-      height: resolveMetafield(metafields, 'height', '').value,
-      width: resolveMetafield(metafields, 'width', '').value,
-      image: resolveMetafield(metafields, 'image', null).value
+      height,
+      width,
+      image
     }
   }
 };

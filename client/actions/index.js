@@ -120,14 +120,13 @@ const updateProduct = (id, payload) => {
     // which is needed because this form contains a file
     const body = new FormData();
     Object.keys(payload).forEach(key => body.append(key, payload[key]));
-    
     return axios.patch(`/api/products/${id}`, body);
 };
 
 export function saveEditForm(productId, payload) {
     return dispatch =>
         updateProduct(productId, payload)
-        .then((metafields) => dispatch(updateProductAfterSaveEditForm(productId, metafields)))
+        .then((payload) => dispatch(updateProductAfterSaveEditForm(productId, payload)))
         .then(() => {
             const bannerOpts = {
                 status: 'success',

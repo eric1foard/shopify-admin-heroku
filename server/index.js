@@ -1,26 +1,29 @@
-// TODO: improve directory structure of express app
-require('isomorphic-fetch');
-require('dotenv').config();
-const { AR_PRODUCT_TAG, METAFIELD_NS } = require('../utils/constants');
-const { resolveMetafield } = require('../utils/metafields');
-const config = require('config');
-const cloudFrontHostname = config.get('cloudFrontHostname');
-const { SHOPIFY_APP_KEY, SHOPIFY_APP_SECRET, NODE_ENV, HEROKU_APP_NAME, REDIS_URL } = process.env;
+const {
+  SHOPIFY_APP_KEY,
+  SHOPIFY_APP_SECRET,
+  NODE_ENV,
+  HEROKU_APP_NAME,
+  REDIS_URL,
+  MONGO_CONNECTION_STR
+} = process.env;
 
+const config = require('config');
 const express = require('express');
-const jsonParser = require('body-parser').json();
-const multer = require('multer')({ dest: 'uploads/' });
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
 const path = require('path');
 const logger = require('morgan');
-
-const ShopifyAPIClient = require('shopify-api-node');
 const ShopifyExpress = require('@shopify/shopify-express');
 const { MemoryStrategy, RedisStrategy } = require('@shopify/shopify-express/strategies');
 const SHOPIFY_APP_HOST = require('../utils/env').getAppHostname(HEROKU_APP_NAME, config.get('appName'));
 const isDevelopment = require('../utils/env').isDevEnvironment(NODE_ENV);
-const { s3PutObject } = require('./lib/s3');
+const productRoutes = require('./routes/product');
+const mongoose = require('mongoose');
+
+mongoose.connect(MONGO_CONNECTION_STR, {
+  useNewUrlParser: true,
+  // autoIndex: false
+});
 
 const shopifyConfig = {
   host: SHOPIFY_APP_HOST,
@@ -29,26 +32,9 @@ const shopifyConfig = {
   scope: ['write_orders, write_products'],
   shopStore: isDevelopment ? new MemoryStrategy() : new RedisStrategy(REDIS_URL),
   afterAuth(request, response) {
-    const { session: { accessToken, shop } } = request;
-
-    registerWebhook(shop, accessToken, {
-      topic: 'orders/create',
-      address: `${SHOPIFY_APP_HOST}/order-create`,
-      format: 'json'
-    });
-
     return response.redirect('/');
   },
 };
-
-// TODO: remove webhook example
-const registerWebhook = function(shopDomain, accessToken, webhook) {
-  const shopify = new ShopifyAPIClient({ shopName: shopDomain, accessToken: accessToken });
-  shopify.webhook.create(webhook).then(
-    response => console.log(`webhook '${webhook.topic}' created`),
-    err => console.log(`Error creating webhook '${webhook.topic}'. ${JSON.stringify(err.response.body)}`)
-  );
-}
 
 const app = express();
 const redisOpts = {
@@ -79,7 +65,7 @@ const shopify = ShopifyExpress(shopifyConfig);
 
 // Mount Shopify Routes
 const {routes, middleware} = shopify;
-const {withShop, withWebhook} = middleware;
+const { withShop } = middleware;
 
 app.use('/shopify', routes);
 
@@ -93,147 +79,7 @@ app.get('/', withShop({authBaseUrl: '/shopify'}), function(request, response) {
   });
 });
 
-const enableProductsForAR = async (shopify, products) => {
-  if (!products.length) return products;
-  const p = products[0];
-  await shopify.product.update(p.id, {
-    // TODO: ensure that when product is deleted that we REMOVE these tags that are created
-    // otherwise, if customer removes and re-adds products, we will get dup tags
-    // also, should actually check if image is low res before marking it as such.
-    tags: p.tags.concat(`, ${AR_PRODUCT_TAG}`)
-  });
-  return enableProductsForAR(shopify, products.slice(1, products.length));
-};
-
-const getProductMetafieldsOne = (id, shopify) => {
-  const opts = {
-    metafield: {
-      owner_resource: 'product',
-      owner_id: id,
-      namespace: METAFIELD_NS
-    }
-  }
-  return shopify.metafield.list(opts);
-}
-
-const getProductMetafieldsAll = async (shopify, products, pos) => {
-  if (pos === products.length) return products;
-  const p = products[pos];
-  p.metafields = await getProductMetafieldsOne(p.id, shopify); // TODO: what if reject?
-  return getProductMetafieldsAll(shopify, products, pos+1);
-}
-
-// called when products are selected via product picker modal
-app.post('/api/products', jsonParser, async (request, response, next) => {
-  try {
-    const { session: { shop, accessToken } } = request;
-    // TODO: shopify call limits
-    const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
-    const { products } = request.body;
-
-    // identify products that are not already AR enabled
-    const targetProducts = products.filter(p => !p.tags.includes(AR_PRODUCT_TAG));
-    await enableProductsForAR(shopify, targetProducts);
-    return response.json(targetProducts);
-  }
-  catch (err) {
-    console.error('catching error', err);
-    return next(err); // TODO: is this correct error-handling behavior?
-  }
-});
-
-app.get('/api/products', async (request, response, next) => {
-  try {
-    const { session: { shop, accessToken } } = request;
-    // TODO: shopify call limits
-    const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
-    const products = await shopify.product.list();
-    const targetProducts = products.filter(p => p.tags.includes(AR_PRODUCT_TAG));
-    const targetProductsWithMetaFields = await getProductMetafieldsAll(shopify, targetProducts, 0);
-    return response.json(targetProductsWithMetaFields);
-  } catch (err) {
-    return next(err);
-  }
-});
-
-app.delete('/api/products/:productId', async (request, response, next) => {
-  try {
-    const { productId } = request.params;
-    const { session: { shop, accessToken } } = request;
-    // TODO: shopify call limits
-    const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
-    const product = await shopify.product.get(productId);
-    let tags = product.tags.replace(AR_PRODUCT_TAG, '');
-    await shopify.product.update(productId, { tags });
-    return response.json({ id: productId });
-  } catch (err) {
-    return next(err);
-  }
-});
-
-const upsertMetafield = (currMetafields, key, value, shopify, productId) => {
-  const targetMetafield = resolveMetafield(currMetafields, key, '');
-  if (targetMetafield.value === value) { // target metafield exists and requires no update
-    return Promise.resolve(targetMetafield);
-  } else if (targetMetafield.id) { // target metafield exists but requires update
-    return shopify.metafield.update(targetMetafield.id, { value, value_type: 'string' })
-  } else { // target metafield does not exist, create it
-    return shopify.metafield.create({
-      key,
-      value,
-      value_type: 'string',
-      namespace: METAFIELD_NS,
-      owner_resource: 'product',
-      owner_id: productId
-    });
-  }
-};
-
-const upsertProductPhoto = (metafields, file, shopify, productId, shopName) => {
-  // TODO: do I need to include image name specified by customer in the s3 object name?
-  const s3ObjectName = `${shopName}/${productId}`;
-  return s3PutObject(s3ObjectName, file)
-  .then(() => {
-    const cfurl = `${cloudFrontHostname}/${s3ObjectName}`;
-    return upsertMetafield(metafields, 'image', cfurl, shopify, productId)
-  })
-};
-
-app.patch('/api/products/:productId', multer.single('image'), async (request, response, next) => {
-  try {
-    const {
-      session: { shop, accessToken },
-      params: { productId },
-      body: { height, width },
-      file
-    } = request;
-    // TODO: shopify call limits
-    const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
-    let currMetafields = await getProductMetafieldsOne(productId, shopify);
-
-    await Promise.all([
-      upsertMetafield(currMetafields, 'height', height, shopify, productId),
-      upsertMetafield(currMetafields, 'width', width, shopify, productId),
-      upsertProductPhoto(currMetafields, file, shopify, productId, shop)
-    ]);
-    currMetafields = await getProductMetafieldsOne(productId, shopify); // TODO: should I skip making this call for perf?
-    return await response.json(currMetafields);
-  } catch (err) {
-    console.log('err caught in patch ', err);
-    return next(err);
-  }
-});
-
-app.post('/order-create', withWebhook((error, request) => {
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  console.log('We got a webhook!');
-  console.log('Details: ', request.webhook);
-  console.log('Body:', request.body);
-}));
+app.use('/api/products', productRoutes);
 
 // Error Handlers
 app.use(function(req, res, next) {
