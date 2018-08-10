@@ -2,14 +2,16 @@ import React, { Component } from 'react';
 import {
   EmptyState,
   ResourceList,
-  Avatar,
+  Thumbnail,
   Card,
   TextStyle,
   Badge,
-  FilterType
+  FilterType,
+  Stack
 } from '@shopify/polaris';
 import { hasValidDimensions, isLowResolution } from '../../utils/image';
 import { resolveMetafield } from '../../utils/metafields';
+import { EMPTY_IMAGE } from '../../utils/constants';
 
 
 const formatDimensions = (height, width) =>
@@ -17,24 +19,22 @@ const formatDimensions = (height, width) =>
     <TextStyle variation="subdued">{width}" x {height}"</TextStyle> :
     null;
 
-const lowResolutionBadge = image =>
-  isLowResolution(image) ?
-    <Badge status="attention">Low Resolution</Badge> :
-    null;
+const imageNeededBadge = image =>
+  image ? null : <Badge status="attention">Image needed</Badge>;
 
 const dimensionsNeededBadge = (height, width) =>
   !hasValidDimensions(height, width) ?
     <Badge status="attention">Dimensions needed</Badge> :
     null;
 
-const renderShortcutActions = (setDeleteAlertOpen, history, {id, title}) => ([
+const renderShortcutActions = (setDeleteAlertOpen, history, { id, title }) => ([
   {
     content: 'Edit',
     onAction: () => history.push(`/products/${id}`)
   },
   {
     content: 'Delete',
-    onAction: () => setDeleteAlertOpen({isOpen: true, id, title })
+    onAction: () => setDeleteAlertOpen({ isOpen: true, id, title })
   }
 ]);
 
@@ -76,32 +76,35 @@ class ProductList extends Component {
 
   renderFilterControl() {
     return <ResourceList.FilterControl
-    filters={[
-      {
-        key: 'productStatusFilter',
-        label: 'Product status',
-        operatorText: 'is',
-        type: FilterType.Select,
-        options: ['Dimensions needed', 'Low resolution', 'Complete'],
-      },
-    ]}
-    appliedFilters={this.props.appliedFilters}
-    onFiltersChange={this.props.onFiltersChange}
-    searchValue="USA"
-    onSearchChange={(searchValue) => {
-      console.log(
-        `Search value changed to ${searchValue}.`,
-        'Todo: use setState to apply this change.',
-      );
-    }}
-  />
+      filters={[
+        {
+          key: 'productStatusFilter',
+          label: 'Product status',
+          operatorText: 'is',
+          type: FilterType.Select,
+          options: ['Dimensions needed', 'Low resolution', 'Complete'],
+        },
+      ]}
+      appliedFilters={this.props.appliedFilters}
+      onFiltersChange={this.props.onFiltersChange}
+      searchValue="USA"
+      onSearchChange={(searchValue) => {
+        console.log(
+          `Search value changed to ${searchValue}.`,
+          'Todo: use setState to apply this change.',
+        );
+      }}
+    />
   }
 
   renderItem(item) {
-    const { id, title, image, metafields } = item;
+    const { id, title, metafields } = item;
     const height = resolveMetafield(metafields, 'height', '').value;
     const width = resolveMetafield(metafields, 'width', '').value;
-    const media = <Avatar size="medium" url={image && image.src || ''} />;
+    const image = resolveMetafield(metafields, 'image', '').value;
+    const media = image ?
+      <Thumbnail source={image} alt={`Photo of ${title}`} /> :
+      <Thumbnail source={EMPTY_IMAGE} alt="no product image" />;
 
     return <ResourceList.Item
       id={id}
@@ -110,10 +113,12 @@ class ProductList extends Component {
       shortcutActions={renderShortcutActions(this.props.setDeleteAlertOpen, this.props.history, item)}
       persistActions
     >
-      <TextStyle variation="strong">{title}</TextStyle>
-      <div>{formatDimensions(height, width)}</div>
-      <div>{lowResolutionBadge(image)}</div>
-      <div>{dimensionsNeededBadge(height, width)}</div>
+      <Stack spacing="tight" distribution="leading">
+        <TextStyle variation="strong">{title}</TextStyle>
+        <div>{formatDimensions(height, width)}</div>
+        <div>{imageNeededBadge(image)}</div>
+        <div>{dimensionsNeededBadge(height, width)}</div>
+      </Stack>
     </ResourceList.Item>;
   }
 }

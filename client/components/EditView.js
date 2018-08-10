@@ -37,7 +37,9 @@ const validate = values => {
   }
   
   // TODO: eventually, I should validate image dimension here
-  if (image) {
+  // if type is string, then image was uploaded previously so
+  // validation not needed
+  if (image && typeof image !== 'string') {
     const { name } = image;
     const dotPos = name.lastIndexOf('.');
     if (dotPos < 0) error.image = true;

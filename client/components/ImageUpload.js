@@ -1,22 +1,31 @@
 import React from 'react';
-import { Banner, Caption, DropZone, List, Stack, Thumbnail } from '@shopify/polaris';
+import { Banner, Caption, DropZone, List, Stack } from '@shopify/polaris';
+
+const renderCaption = (name, size) => {
+  if (name && size) {
+    return <div>
+      {name} <Caption>{size} bytes</Caption>
+    </div>
+  }
+  return null;
+}
 
 const ImageUpload = (props) => {
   console.log('ImageUpload props ', props);
-  const { meta: { error }, input: { onChange, value = null } } = props;
+  const { meta: { error }, input: { onChange, value = '' } } = props;
   const file = value;
-
   const fileUpload = !file && <DropZone.FileUpload />;
-
+  // TODO: need to revokeObjectURL to avoid mem leak?
+  const imgSrc = typeof file === 'string' ? file : window.URL.createObjectURL(file);
   const uploadedFiles = file && (
     <Stack vertical>
       <Stack alignment="center">
         <img
-          alt={file.name}
-          src={window.URL.createObjectURL(file)} // TODO: need to revokeObjectURL to avoid mem leak?
+          alt={file.name || 'product image'}
+          src={imgSrc}
         />
         <div>
-          {file.name} <Caption>{file.size} bytes</Caption>
+          {renderCaption(file.name, file.size)}
         </div>
       </Stack>
     </Stack>
@@ -28,15 +37,16 @@ const ImageUpload = (props) => {
       status="critical"
     >
       <List type="bullets">
-          <List.Item>
-            {`"${
-              file.name
-              }" is not supported. File type must be .gif, .jpg, .png or .svg.`}
-          </List.Item>
+        <List.Item>
+          {`"${
+            file.name
+            }" is not supported. File type must be .gif, .jpg, .png or .svg.`}
+        </List.Item>
       </List>
     </Banner>
   );
 
+  // TODO: need to adjust below what kind of images are accepted?
   return (
     <Stack vertical>
       {errorMessage}
@@ -47,8 +57,8 @@ const ImageUpload = (props) => {
           return onChange(files[0]);
         }}
       >
-        {uploadedFiles}
-        {fileUpload}
+      {uploadedFiles}
+      {fileUpload}
       </DropZone>
     </Stack>
   );
