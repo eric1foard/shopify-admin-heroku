@@ -11,7 +11,6 @@ const renderCaption = (name, size) => {
 }
 
 const ImageUpload = (props) => {
-  console.log('ImageUpload props ', props);
   const { meta: { error }, input: { onChange, value = '' } } = props;
   const file = value;
   const fileUpload = !file && <DropZone.FileUpload />;

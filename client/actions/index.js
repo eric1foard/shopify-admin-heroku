@@ -20,7 +20,8 @@ export function setProductPickerOpen(isOpen) {
     };
 }
 
-const addProducts = products => axios.post('/api/products', products);
+const addProducts = (products, pageNum, pageSize) =>
+    axios.post(`/api/products?page=${pageNum}&limit=${pageSize}`, products);
 
 export function productsAddedSuccess(products) {
     return {
@@ -29,10 +30,10 @@ export function productsAddedSuccess(products) {
     };
 }
 
-export function addSelectedProducts(products) {
+export function addSelectedProducts(products, pageNum, pageSize) {
     return dispatch =>
-        addProducts(products)
-        .then(() => dispatch(productsAddedSuccess(products)))
+        addProducts(products, pageNum, pageSize)
+        .then(data => dispatch(productsAddedSuccess(data)))
         .then(() => {
             const bannerOpts = {
                 status: 'success',
@@ -59,11 +60,19 @@ export function onFiltersChange(filters) {
     };
 }
 
-export function getProducts() {
+export function getProducts(pageSize) {
     return {
         type: 'GET_PRODUCTS',
-        payload: axios.get('/api/products')
+        payload: axios.get(`/api/products?limit=${pageSize}`)
     };
+}
+
+export function handlePagination(direction, pageNum, pageSize) {
+    const next = direction === 'next'; // direction is 'next' or 'prev'
+    return {
+        type: next ? 'NEXT_PAGE' : 'PREV_PAGE',
+        payload: axios.get(`/api/products?page=${next ? pageNum+1 : Math.max(pageNum-1, 0)}&limit=${pageSize}`)
+    }
 }
 
 export function setDeleteAlertOpen(opts) {
@@ -73,20 +82,28 @@ export function setDeleteAlertOpen(opts) {
     };
 }
 
-const deleteProduct = id => axios.delete(`/api/products/${id}`);
+const deleteProduct = (id, pageNum, pageSize) =>
+    axios.delete(`/api/products/${id}?page=${pageNum}&limit=${pageSize}`);
 
-export function updateProductsAfterDelete(id) {
+export function updateProductsAfterDelete(payload) {
     return {
         type: 'DELETE_PRODUCT',
-        payload: id
+        payload
     }
 }
 
-// TODO: add behavior to display modal
-export function deleteProductAndCloseModal(id) {
+export function deleteProductAndCloseModal(id, pageNum, pageSize) {
     return dispatch =>
-        deleteProduct(id)
-        .then(() => dispatch(updateProductsAfterDelete(id)))
+        deleteProduct(id, pageNum, pageSize)
+        .then(({ data }) => {
+            console.log('data!!!!!!!!!!', data);
+            return data.products.length ?
+                { payload: { data } } :
+                dispatch(handlePagination('prev', pageNum, pageSize));
+        })
+        .then(({ payload }) => {
+            return dispatch(updateProductsAfterDelete(payload))
+        })
         .then(() => dispatch(setDeleteAlertOpen({ isOpen: false, id: 0, title: '' })))
         .then(() => {
             const bannerOpts = {

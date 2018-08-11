@@ -18,7 +18,7 @@ class App extends Component {
   }
 
   componentWillMount() {
-    this.props.getProducts();
+    this.props.getProducts(this.props.pagination.pageSize);
   }
 
   render() {
@@ -44,12 +44,14 @@ class App extends Component {
             setProductPickerOpen={this.props.setProductPickerOpen}
             productPickerModalOpen={this.props.productPickerModalOpen}
             addSelectedProducts={this.props.addSelectedProducts}
+            pagination={this.props.pagination}
           />
           <DeleteAlert
             isDeleteAlertOpen={this.props.isDeleteAlertOpen}
             setDeleteAlertOpen={this.props.setDeleteAlertOpen}
             deleteProductOpts={this.props.deleteProductOpts}
             deleteProductAndCloseModal={this.props.deleteProductAndCloseModal}
+            pagination={this.props.pagination}
           />
           <Router>
             <div>
@@ -70,6 +72,8 @@ class App extends Component {
     appliedFilters={this.props.appliedFilters}
     onFiltersChange={this.props.onFiltersChange}
     setDeleteAlertOpen={this.props.setDeleteAlertOpen}
+    pagination={this.props.pagination}
+    handlePagination={this.props.handlePagination}
   />
   }
 

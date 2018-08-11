@@ -1,4 +1,3 @@
-const { promisify } = require('util');
 const config = require('config');
 const cloudFrontHostname = config.get('cloudFrontHostname');
 const jsonParser = require('body-parser').json();
@@ -9,19 +8,39 @@ const Product = require('../models/Product');
 const router = require('express').Router();
 
 const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_PAGE_NUM = 1;
+const DEFAULT_PAGE_NUM = 0;
+
+const getProductPage = (shop, page, limit) => {
+  limit = limit ? parseInt(limit) : DEFAULT_PAGE_SIZE;
+  page = page ? parseInt(page) : DEFAULT_PAGE_NUM;
+
+  return Product.find({ shop })
+  .sort({ title: 1 }) // sort alphabetically
+  .skip(page * limit)
+  .limit(limit + 1)
+  .then(result => {
+    const hasNextPage = result.length > limit;
+    return {
+      products: hasNextPage ? result.slice(0, result.length - 1) : result,
+      hasNextPage
+    }
+  })
+};
 
 // called when products are selected via product picker modal
 router.post('/', jsonParser, async (request, response, next) => {
   try {
     const {
-      // session: { shop, accessToken },
-      body: { products }
+      session: { shop, accessToken },
+      body: { products },
+      query: { limit, page }
     } = request;
     // const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
-    const insertProducts = products.map(({ id, title }) => ({ id, title, shop: 'foo' }))
-    const result = await Product.insertMany(insertProducts);
-    return response.json(result);
+    const insertProducts = products.map(({ id, title }) => ({ id, title, shop }))
+    await Product.insertMany(insertProducts);
+
+    const updatedProducts = await getProductPage(shop, page, limit);
+    return response.json(updatedProducts);
   }
   catch (err) {
     console.error('catching error', err);
@@ -32,18 +51,12 @@ router.post('/', jsonParser, async (request, response, next) => {
 router.get('/', async (request, response, next) => {
   try {
     let {
-      // session: { shop },
+      session: { shop },
       query: { limit, page }
     } = request;
 
-    limit = limit ? parseInt(limit) : DEFAULT_PAGE_SIZE;
-    page = page ? parseInt(page) : DEFAULT_PAGE_NUM;
+    const products = await getProductPage(shop, page, limit);
 
-    const products = await Product.find({ shop: 'foo' })
-      .sort({ title: 1 }) // sort alphabetically
-      .skip(page > 1 ? (page - 1) * limit : 0)
-      .limit(limit)
-  
     return response.json(products);
   } catch (err) {
     return next(err);
@@ -52,11 +65,18 @@ router.get('/', async (request, response, next) => {
 
 router.delete('/:productId', async (request, response, next) => {
   try {
-    const { productId } = request.params;
+    const {
+      session: { shop },
+      params : { productId },
+      query: { limit, page }
+    } = request;
+
     const deletedProduct = await Product.deleteOne({ id: productId });
     console.log(deletedProduct);
 
-    return response.json({ id: productId });
+    const products = await getProductPage(shop, page, limit);
+
+    return response.json(products);
   } catch (err) {
     return next(err);
   }

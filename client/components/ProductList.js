@@ -7,9 +7,11 @@ import {
   TextStyle,
   Badge,
   FilterType,
-  Stack
+  Stack,
+  Pagination
 } from '@shopify/polaris';
-import { hasValidDimensions, isLowResolution } from '../../utils/image';
+import ResourceListFooter from './ResourceListFooter';
+import { hasValidDimensions } from '../../utils/image';
 import { EMPTY_IMAGE } from '../../utils/constants';
 
 
@@ -61,6 +63,25 @@ class ProductList extends Component {
     </EmptyState>
   }
 
+  renderPagination() {
+    const {
+      pagination: { pageNum, pageSize, hasNextPage },
+      products,
+      handlePagination
+    } = this.props;
+
+    return products.length > 0 ? (
+      <ResourceListFooter>
+        <Pagination
+          hasPrevious={pageNum > 0}
+          hasNext={hasNextPage}
+          onPrevious={() => handlePagination('prev', pageNum, pageSize)}
+          onNext={() => handlePagination('next', pageNum, pageSize)}
+        />
+      </ResourceListFooter>
+    ) : null;
+  }
+
   renderProductList() {
     return <Card>
       <ResourceList
@@ -70,6 +91,7 @@ class ProductList extends Component {
         renderItem={this.renderItem}
         filterControl={this.renderFilterControl}
       />
+      {this.renderPagination()}
     </Card>;
   }
 
