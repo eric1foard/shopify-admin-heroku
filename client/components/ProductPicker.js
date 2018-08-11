@@ -10,8 +10,8 @@ class ProductPicker extends Component {
             open={this.props.productPickerModalOpen}
             onCancel={() => this.props.setProductPickerOpen(false)}
             onSelection={({ products }) => {
-                // TODO: pass minimal payload to server to avoid slow call
-                this.props.addSelectedProducts({ products });
+                const targetProducts = products.map(({ id, title }) => ({ id, title }));
+                this.props.addSelectedProducts({ products: targetProducts });
             }}
         />
     }

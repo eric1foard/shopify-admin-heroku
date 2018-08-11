@@ -10,7 +10,6 @@ import {
   Stack
 } from '@shopify/polaris';
 import { hasValidDimensions, isLowResolution } from '../../utils/image';
-import { resolveMetafield } from '../../utils/metafields';
 import { EMPTY_IMAGE } from '../../utils/constants';
 
 
@@ -98,10 +97,7 @@ class ProductList extends Component {
   }
 
   renderItem(item) {
-    const { id, title, metafields } = item;
-    const height = resolveMetafield(metafields, 'height', '').value;
-    const width = resolveMetafield(metafields, 'width', '').value;
-    const image = resolveMetafield(metafields, 'image', '').value;
+    const { id, title, height, width, image } = item;
     const media = image ?
       <Thumbnail source={image} alt={`Photo of ${title}`} /> :
       <Thumbnail source={EMPTY_IMAGE} alt="no product image" />;
