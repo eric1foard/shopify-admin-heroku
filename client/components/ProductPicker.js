@@ -12,7 +12,7 @@ class ProductPicker extends Component {
             onSelection={({ products }) => {
                 const { pageNum, pageSize } = this.props.pagination;
                 const targetProducts = products.map(({ id, title }) => ({ id, title }));
-                this.props.addSelectedProducts({ products: targetProducts }, pageNum, pageSize);
+                this.props.addSelectedProducts({ products: targetProducts }, pageNum, pageSize, this.props.search.value);
                 this.props.setProductPickerOpen(false);
             }}
         />

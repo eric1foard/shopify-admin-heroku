@@ -12,7 +12,8 @@ const mongoSchema = new Schema({
 
 // NOTE: these should be used for DEVELOPMENT ONLY!!!
 // in prod, indexes should NOT be created on the fly.
-mongoSchema.index({ shop: 1 }, { unique: true });
-mongoSchema.index({ id: 1 }, { unique: true });
+// mongoSchema.index({ shop: 1 });
+// mongoSchema.index({ id: 1 }, { unique: true });
+// mongoSchema.index({ title: 'text' });
 
 module.exports = mongoose.model('Product', mongoSchema);
