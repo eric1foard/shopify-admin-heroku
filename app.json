@@ -18,6 +18,9 @@
     },
     "AWS_SECRET_ACCESS_KEY": {
       "required": true
+    },
+    "MONGO_CONNECTION_STR": {
+      "required": true
     }
   },
   "formation": {

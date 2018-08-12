@@ -10,8 +10,10 @@ class ProductPicker extends Component {
             open={this.props.productPickerModalOpen}
             onCancel={() => this.props.setProductPickerOpen(false)}
             onSelection={({ products }) => {
+                const { pageNum, pageSize } = this.props.pagination;
                 const targetProducts = products.map(({ id, title }) => ({ id, title }));
-                this.props.addSelectedProducts({ products: targetProducts });
+                this.props.addSelectedProducts({ products: targetProducts }, pageNum, pageSize);
+                this.props.setProductPickerOpen(false);
             }}
         />
     }
