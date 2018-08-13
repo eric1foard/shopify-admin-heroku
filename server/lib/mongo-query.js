@@ -31,8 +31,6 @@ const resolveFilterQuery = filters => {
 }
 
 const resolveQuery = (shop, search, filters) => {
-  console.log('in resolveQury!!!!!! ',filters);
-  
   let query = { shop }; // by default, query for all products in shop
   let sort = { title: 1 }; // sort alphabetically
   // if sort is null, mongo will order results by how well they match query
@@ -46,7 +44,6 @@ const resolveQuery = (shop, search, filters) => {
     return { query: textQuery, sort: null };
   }
   if (filters.length) {
-    console.log('filter query!!!' , filterQuery)
     return { query: filterQuery, sort };
   }
   return { query, sort };
