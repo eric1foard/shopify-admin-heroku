@@ -18,7 +18,7 @@ class App extends Component {
   }
 
   componentWillMount() {
-    this.props.getProducts(this.props.pagination.pageSize);
+    this.props.getProducts('', this.props.pagination.pageSize);
   }
 
   render() {
@@ -45,6 +45,7 @@ class App extends Component {
             productPickerModalOpen={this.props.productPickerModalOpen}
             addSelectedProducts={this.props.addSelectedProducts}
             pagination={this.props.pagination}
+            search={this.props.search}
           />
           <DeleteAlert
             isDeleteAlertOpen={this.props.isDeleteAlertOpen}
@@ -52,6 +53,7 @@ class App extends Component {
             deleteProductOpts={this.props.deleteProductOpts}
             deleteProductAndCloseModal={this.props.deleteProductAndCloseModal}
             pagination={this.props.pagination}
+            search={this.props.search}
           />
           <Router>
             <div>
@@ -74,6 +76,11 @@ class App extends Component {
     setDeleteAlertOpen={this.props.setDeleteAlertOpen}
     pagination={this.props.pagination}
     handlePagination={this.props.handlePagination}
+    search={this.props.search}
+    searchProducts={this.props.searchProducts}
+    updateSearchField={this.props.updateSearchField}
+    clearTypingTimeout={this.props.clearTypingTimeout}
+    setTypingTimeout={this.props.setTypingTimeout}
   />
   }
 

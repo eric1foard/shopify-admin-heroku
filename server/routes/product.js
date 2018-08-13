@@ -10,12 +10,20 @@ const router = require('express').Router();
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE_NUM = 0;
 
-const getProductPage = (shop, page, limit) => {
+const getProductPage = (shop, page, limit, search) => {
   limit = limit ? parseInt(limit) : DEFAULT_PAGE_SIZE;
   page = page ? parseInt(page) : DEFAULT_PAGE_NUM;
+  let query = { shop }; // by default, query for all products in shop
+  let sort = { title: 1 }; // sort alphabetically
 
-  return Product.find({ shop })
-  .sort({ title: 1 }) // sort alphabetically
+  if (search) {
+    query = { $text: { $search : search } };
+    sort = null; // let mongo sort by how well results match search string
+  }
+
+  return Product
+  .find(query)
+  .sort(sort)
   .skip(page * limit)
   .limit(limit + 1)
   .then(result => {
@@ -33,13 +41,13 @@ router.post('/', jsonParser, async (request, response, next) => {
     const {
       session: { shop, accessToken },
       body: { products },
-      query: { limit, page }
+      query: { limit, page, search }
     } = request;
     // const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
     const insertProducts = products.map(({ id, title }) => ({ id, title, shop }))
     await Product.insertMany(insertProducts);
 
-    const updatedProducts = await getProductPage(shop, page, limit);
+    const updatedProducts = await getProductPage(shop, page, limit, search);
     return response.json(updatedProducts);
   }
   catch (err) {
@@ -52,10 +60,10 @@ router.get('/', async (request, response, next) => {
   try {
     let {
       session: { shop },
-      query: { limit, page }
+      query: { limit, page, search }
     } = request;
 
-    const products = await getProductPage(shop, page, limit);
+    const products = await getProductPage(shop, page, limit, search);
 
     return response.json(products);
   } catch (err) {
@@ -68,13 +76,13 @@ router.delete('/:productId', async (request, response, next) => {
     const {
       session: { shop },
       params : { productId },
-      query: { limit, page }
+      query: { limit, page, search }
     } = request;
 
     const deletedProduct = await Product.deleteOne({ id: productId });
     console.log(deletedProduct);
 
-    const products = await getProductPage(shop, page, limit);
+    const products = await getProductPage(shop, page, limit, search);
 
     return response.json(products);
   } catch (err) {

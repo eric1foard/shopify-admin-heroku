@@ -7,6 +7,7 @@ import deleteAlertReducer from './reducer_delete_alert';
 import deleteProductOptsReducer from './reducer_delete_product_opts';
 import bannerReducer from './reducer_banner';
 import paginationReducer from './reducer_pagination';
+import searchReducer from './reducer_search';
 
 const rootReducer = combineReducers({
   products: productsReducer,
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   deleteProductOpts: deleteProductOptsReducer,
   banner: bannerReducer,
   pagination: paginationReducer,
+  search: searchReducer,
   form: formReducer
 });
 

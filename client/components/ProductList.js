@@ -46,7 +46,7 @@ class ProductList extends Component {
   }
 
   render() {
-    if (!this.props.products.length) {
+    if (!this.props.products.length && !this.props.search.value) {
       return this.renderEmptyState();
     }
     return this.renderProductList();
@@ -67,7 +67,8 @@ class ProductList extends Component {
     const {
       pagination: { pageNum, pageSize, hasNextPage },
       products,
-      handlePagination
+      handlePagination,
+      search
     } = this.props;
 
     return products.length > 0 ? (
@@ -75,8 +76,8 @@ class ProductList extends Component {
         <Pagination
           hasPrevious={pageNum > 0}
           hasNext={hasNextPage}
-          onPrevious={() => handlePagination('prev', pageNum, pageSize)}
-          onNext={() => handlePagination('next', pageNum, pageSize)}
+          onPrevious={() => handlePagination('prev', pageNum, pageSize, search.value)}
+          onNext={() => handlePagination('next', pageNum, pageSize, search.value)}
         />
       </ResourceListFooter>
     ) : null;
@@ -89,7 +90,7 @@ class ProductList extends Component {
         resourceName={{ singular: 'product', plural: 'products' }}
         items={this.props.products}
         renderItem={this.renderItem}
-        filterControl={this.renderFilterControl}
+        filterControl={this.renderFilterControl()}
       />
       {this.renderPagination()}
     </Card>;
@@ -103,17 +104,20 @@ class ProductList extends Component {
           label: 'Product status',
           operatorText: 'is',
           type: FilterType.Select,
-          options: ['Dimensions needed', 'Low resolution', 'Complete'],
+          options: ['Image needed', 'Dimensions needed'],
         },
       ]}
       appliedFilters={this.props.appliedFilters}
       onFiltersChange={this.props.onFiltersChange}
-      searchValue="USA"
+      searchValue={this.props.search.value}
       onSearchChange={(searchValue) => {
-        console.log(
-          `Search value changed to ${searchValue}.`,
-          'Todo: use setState to apply this change.',
-        );
+        this.props.updateSearchField(searchValue);
+        if (this.props.search.typingTimeout) {
+          this.props.clearTypingTimeout();
+        }
+        this.props.setTypingTimeout(() => {
+          this.props.searchProducts(searchValue, this.props.pagination.pageSize);
+        }, 1000);
       }}
     />
   }

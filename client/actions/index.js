@@ -20,8 +20,8 @@ export function setProductPickerOpen(isOpen) {
     };
 }
 
-const addProducts = (products, pageNum, pageSize) =>
-    axios.post(`/api/products?page=${pageNum}&limit=${pageSize}`, products);
+const addProducts = (products, pageNum, pageSize, searchStr) =>
+    axios.post(`/api/products?page=${pageNum}&limit=${pageSize}&search=${searchStr}`, products);
 
 export function productsAddedSuccess(products) {
     return {
@@ -30,9 +30,9 @@ export function productsAddedSuccess(products) {
     };
 }
 
-export function addSelectedProducts(products, pageNum, pageSize) {
+export function addSelectedProducts(products, pageNum, pageSize, searchStr) {
     return dispatch =>
-        addProducts(products, pageNum, pageSize)
+        addProducts(products, pageNum, pageSize, searchStr)
         .then(data => dispatch(productsAddedSuccess(data)))
         .then(() => {
             const bannerOpts = {
@@ -60,18 +60,18 @@ export function onFiltersChange(filters) {
     };
 }
 
-export function getProducts(pageSize) {
+export function getProducts(searchStr, pageSize) {
     return {
         type: 'GET_PRODUCTS',
-        payload: axios.get(`/api/products?limit=${pageSize}`)
+        payload: axios.get(`/api/products?search=${searchStr}&limit=${pageSize}`)
     };
 }
 
-export function handlePagination(direction, pageNum, pageSize) {
+export function handlePagination(direction, pageNum, pageSize, searchStr) {
     const next = direction === 'next'; // direction is 'next' or 'prev'
     return {
         type: next ? 'NEXT_PAGE' : 'PREV_PAGE',
-        payload: axios.get(`/api/products?page=${next ? pageNum+1 : Math.max(pageNum-1, 0)}&limit=${pageSize}`)
+        payload: axios.get(`/api/products?page=${next ? pageNum+1 : Math.max(pageNum-1, 0)}&limit=${pageSize}&search=${searchStr}`)
     }
 }
 
@@ -82,8 +82,8 @@ export function setDeleteAlertOpen(opts) {
     };
 }
 
-const deleteProduct = (id, pageNum, pageSize) =>
-    axios.delete(`/api/products/${id}?page=${pageNum}&limit=${pageSize}`);
+const deleteProduct = (id, pageNum, pageSize, searchStr) =>
+    axios.delete(`/api/products/${id}?page=${pageNum}&limit=${pageSize}&search=${searchStr}`);
 
 export function updateProductsAfterDelete(payload) {
     return {
@@ -92,14 +92,14 @@ export function updateProductsAfterDelete(payload) {
     }
 }
 
-export function deleteProductAndCloseModal(id, pageNum, pageSize) {
+export function deleteProductAndCloseModal(id, pageNum, pageSize, searchStr) {
     return dispatch =>
-        deleteProduct(id, pageNum, pageSize)
+        deleteProduct(id, pageNum, pageSize, searchStr)
         .then(({ data }) => {
             console.log('data!!!!!!!!!!', data);
             return data.products.length ?
                 { payload: { data } } :
-                dispatch(handlePagination('prev', pageNum, pageSize));
+                dispatch(handlePagination('prev', pageNum, pageSize, searchStr));
         })
         .then(({ payload }) => {
             return dispatch(updateProductsAfterDelete(payload))
@@ -161,4 +161,38 @@ export function saveEditForm(productId, payload) {
             };
             return dispatch(showBanner(bannerOpts));
         });
+}
+
+export function updateSearchField(searchStr) {
+    return {
+        type: 'UPDATE_SEARCH_FIELD',
+        payload: searchStr
+    }
+}
+
+export function setTypingTimeout(fn, delay) {
+    return {
+        type: 'SET_TYPING_TIMEOUT',
+        payload: { fn, delay }
+    }
+}
+
+export function searchProducts(searchStr, pageSize) {
+    return dispatch =>
+        dispatch(getProducts(searchStr, pageSize))
+        .catch((err) => {
+            console.log(err);
+            const bannerOpts = {
+                status: 'critical',
+                title: 'Search Failure',
+                message: 'There was a problem finding your products. Please try again'
+            };
+            return dispatch(showBanner(bannerOpts));
+        });
+}
+
+export function clearTypingTimeout() {
+    return {
+        type: 'CLEAR_TYPING_TIMEOUT'
+    };
 }
