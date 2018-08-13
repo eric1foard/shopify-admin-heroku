@@ -20,8 +20,10 @@ export function setProductPickerOpen(isOpen) {
     };
 }
 
-const addProducts = (products, pageNum, pageSize, searchStr) =>
-    axios.post(`/api/products?page=${pageNum}&limit=${pageSize}&search=${searchStr}`, products);
+const addProducts = (products, page, limit, search, filters) => {
+    const opts = { params: { search, filters, page, limit } };
+    return axios.post('/api/products', products, opts);
+}
 
 export function productsAddedSuccess(products) {
     return {
@@ -30,9 +32,9 @@ export function productsAddedSuccess(products) {
     };
 }
 
-export function addSelectedProducts(products, pageNum, pageSize, searchStr) {
+export function addSelectedProducts(products, pageNum, pageSize, searchStr, filters) {
     return dispatch =>
-        addProducts(products, pageNum, pageSize, searchStr)
+        addProducts(products, pageNum, pageSize, searchStr, filters)
         .then(data => dispatch(productsAddedSuccess(data)))
         .then(() => {
             const bannerOpts = {
@@ -53,25 +55,42 @@ export function addSelectedProducts(products, pageNum, pageSize, searchStr) {
         });
 }
 
-export function onFiltersChange(filters) {
-    return {
-        type: 'SET_FILTERS',
-        payload: filters
-    };
-}
-
-export function getProducts(searchStr, pageSize) {
+export function getProducts(search, limit, filters) {
+    const opts = { params: { search, limit, filters } };
     return {
         type: 'GET_PRODUCTS',
-        payload: axios.get(`/api/products?search=${searchStr}&limit=${pageSize}`)
+        payload: axios.get('/api/products', opts)
     };
 }
 
-export function handlePagination(direction, pageNum, pageSize, searchStr) {
+const updateFilters = (filters) =>
+    Promise.resolve({
+        type: 'SET_FILTERS',
+        payload: filters
+    });
+
+export function handleFilterChange(filters, searchStr, pageSize) {
+    return dispatch =>
+        dispatch(updateFilters(filters))
+        .then(() => dispatch(getProducts(searchStr, pageSize, filters)))
+        .catch((err) => {
+            console.log(err);
+            const bannerOpts = {
+                status: 'critical',
+                title: 'Filtering Failure',
+                message: 'There was a problem applying those filters. Please try again'
+            };
+            return dispatch(showBanner(bannerOpts));
+        });
+}
+
+export function handlePagination(direction, pageNum, limit, search, filters) {
     const next = direction === 'next'; // direction is 'next' or 'prev'
+    const page = next ? pageNum+1 : Math.max(pageNum-1, 0);
+    const opts = { params: { search, filters, page, limit } };
     return {
         type: next ? 'NEXT_PAGE' : 'PREV_PAGE',
-        payload: axios.get(`/api/products?page=${next ? pageNum+1 : Math.max(pageNum-1, 0)}&limit=${pageSize}&search=${searchStr}`)
+        payload: axios.get('/api/products', opts)
     }
 }
 
@@ -82,8 +101,10 @@ export function setDeleteAlertOpen(opts) {
     };
 }
 
-const deleteProduct = (id, pageNum, pageSize, searchStr) =>
-    axios.delete(`/api/products/${id}?page=${pageNum}&limit=${pageSize}&search=${searchStr}`);
+const deleteProduct = (id, page, limit, search, filters) => {
+    const opts = { params: { search, filters, page, limit } };
+    return axios.delete(`/api/products/${id}`, opts);
+}
 
 export function updateProductsAfterDelete(payload) {
     return {
@@ -92,14 +113,13 @@ export function updateProductsAfterDelete(payload) {
     }
 }
 
-export function deleteProductAndCloseModal(id, pageNum, pageSize, searchStr) {
+export function deleteProductAndCloseModal(id, pageNum, pageSize, searchStr, filters) {
     return dispatch =>
-        deleteProduct(id, pageNum, pageSize, searchStr)
+        deleteProduct(id, pageNum, pageSize, searchStr, filters)
         .then(({ data }) => {
-            console.log('data!!!!!!!!!!', data);
             return data.products.length ?
                 { payload: { data } } :
-                dispatch(handlePagination('prev', pageNum, pageSize, searchStr));
+                dispatch(handlePagination('prev', pageNum, pageSize, searchStr, filters));
         })
         .then(({ payload }) => {
             return dispatch(updateProductsAfterDelete(payload))
@@ -177,9 +197,9 @@ export function setTypingTimeout(fn, delay) {
     }
 }
 
-export function searchProducts(searchStr, pageSize) {
+export function searchProducts(searchStr, pageSize, filters) {
     return dispatch =>
-        dispatch(getProducts(searchStr, pageSize))
+        dispatch(getProducts(searchStr, pageSize, filters))
         .catch((err) => {
             console.log(err);
             const bannerOpts = {

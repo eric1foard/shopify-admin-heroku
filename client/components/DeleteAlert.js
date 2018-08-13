@@ -10,7 +10,11 @@ class DeleteAlert extends Component {
       confirmContent="Delete"
       onConfirm={() => {
         const { pageNum, pageSize } = this.props.pagination;
-        this.props.deleteProductAndCloseModal(this.props.deleteProductOpts.id, pageNum, pageSize, this.props.search.value);
+        this.props.deleteProductAndCloseModal(this.props.deleteProductOpts.id,
+          pageNum,
+          pageSize,
+          this.props.search.value,
+          this.props.filters);
       }}
       cancelContent="Cancel"
       onClose={() => this.props.setDeleteAlertOpen({ isOpen: false, id: 0, title: '' })}

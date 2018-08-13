@@ -6,20 +6,15 @@ const ShopifyAPIClient = require('shopify-api-node');
 const { s3PutObject } = require('../lib/s3');
 const Product = require('../models/Product');
 const router = require('express').Router();
+const { resolveQuery } = require('../lib/mongo-query');
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE_NUM = 0;
 
-const getProductPage = (shop, page, limit, search) => {
+const getProductPage = (shop, page, limit, search = '', filters = []) => {
   limit = limit ? parseInt(limit) : DEFAULT_PAGE_SIZE;
   page = page ? parseInt(page) : DEFAULT_PAGE_NUM;
-  let query = { shop }; // by default, query for all products in shop
-  let sort = { title: 1 }; // sort alphabetically
-
-  if (search) {
-    query = { $text: { $search : search } };
-    sort = null; // let mongo sort by how well results match search string
-  }
+  const { query, sort } = resolveQuery(shop, search, filters.map(f => JSON.parse(f)));
 
   return Product
   .find(query)
@@ -41,13 +36,13 @@ router.post('/', jsonParser, async (request, response, next) => {
     const {
       session: { shop, accessToken },
       body: { products },
-      query: { limit, page, search }
+      query: { limit, page, search, filters }
     } = request;
     // const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
     const insertProducts = products.map(({ id, title }) => ({ id, title, shop }))
     await Product.insertMany(insertProducts);
 
-    const updatedProducts = await getProductPage(shop, page, limit, search);
+    const updatedProducts = await getProductPage(shop, page, limit, search, filters);
     return response.json(updatedProducts);
   }
   catch (err) {
@@ -60,10 +55,10 @@ router.get('/', async (request, response, next) => {
   try {
     let {
       session: { shop },
-      query: { limit, page, search }
+      query: { limit, page, search, filters }
     } = request;
 
-    const products = await getProductPage(shop, page, limit, search);
+    const products = await getProductPage(shop, page, limit, search, filters);
 
     return response.json(products);
   } catch (err) {
@@ -76,13 +71,13 @@ router.delete('/:productId', async (request, response, next) => {
     const {
       session: { shop },
       params : { productId },
-      query: { limit, page, search }
+      query: { limit, page, search, filters }
     } = request;
 
     const deletedProduct = await Product.deleteOne({ id: productId });
     console.log(deletedProduct);
 
-    const products = await getProductPage(shop, page, limit, search);
+    const products = await getProductPage(shop, page, limit, search, filters);
 
     return response.json(products);
   } catch (err) {

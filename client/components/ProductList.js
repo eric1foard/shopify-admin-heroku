@@ -12,7 +12,12 @@ import {
 } from '@shopify/polaris';
 import ResourceListFooter from './ResourceListFooter';
 import { hasValidDimensions } from '../../utils/image';
-import { EMPTY_IMAGE } from '../../utils/constants';
+import {
+  EMPTY_IMAGE,
+  IMAGE_NEEDED_FILTER,
+  DIMENSIONS_NEEDED_FILTER,
+  FILTER_OPTS
+} from '../../utils/constants';
 
 
 const formatDimensions = (height, width) =>
@@ -39,6 +44,24 @@ const renderShortcutActions = (setDeleteAlertOpen, history, { id, title }) => ([
   }
 ]);
 
+const filterOptions = () => {
+    const options = [ FILTER_OPTS.NEEDED, FILTER_OPTS.PRESENT ];
+    return [{
+      key: IMAGE_NEEDED_FILTER,
+      label: 'Image',
+      operatorText: 'is',
+      type: FilterType.Select,
+      options
+    },
+    {
+      key: DIMENSIONS_NEEDED_FILTER,
+      label: 'Dimensions',
+      operatorText: 'are',
+      type: FilterType.Select,
+      options
+    }]
+};
+
 class ProductList extends Component {
   constructor(props) {
     super(props);
@@ -46,7 +69,8 @@ class ProductList extends Component {
   }
 
   render() {
-    if (!this.props.products.length && !this.props.search.value) {
+    if (!this.props.products.length &&
+      !(this.props.search.value || this.props.appliedFilters)) {
       return this.renderEmptyState();
     }
     return this.renderProductList();
@@ -68,7 +92,8 @@ class ProductList extends Component {
       pagination: { pageNum, pageSize, hasNextPage },
       products,
       handlePagination,
-      search
+      search,
+      appliedFilters
     } = this.props;
 
     return products.length > 0 ? (
@@ -76,8 +101,8 @@ class ProductList extends Component {
         <Pagination
           hasPrevious={pageNum > 0}
           hasNext={hasNextPage}
-          onPrevious={() => handlePagination('prev', pageNum, pageSize, search.value)}
-          onNext={() => handlePagination('next', pageNum, pageSize, search.value)}
+          onPrevious={() => handlePagination('prev', pageNum, pageSize, search.value, appliedFilters)}
+          onNext={() => handlePagination('next', pageNum, pageSize, search.value, appliedFilters)}
         />
       </ResourceListFooter>
     ) : null;
@@ -97,27 +122,30 @@ class ProductList extends Component {
   }
 
   renderFilterControl() {
+    const {
+      appliedFilters,
+      handleFilterChange,
+      search,
+      updateSearchField,
+      clearTypingTimeout,
+      setTypingTimeout,
+      searchProducts,
+      pagination: { pageSize }
+    } = this.props;
+    
     return <ResourceList.FilterControl
-      filters={[
-        {
-          key: 'productStatusFilter',
-          label: 'Product status',
-          operatorText: 'is',
-          type: FilterType.Select,
-          options: ['Image needed', 'Dimensions needed'],
-        },
-      ]}
-      appliedFilters={this.props.appliedFilters}
-      onFiltersChange={this.props.onFiltersChange}
-      searchValue={this.props.search.value}
+      filters={filterOptions()}
+      appliedFilters={appliedFilters}
+      onFiltersChange={filters => handleFilterChange(filters, search.value, pageSize)}
+      searchValue={search.value}
       onSearchChange={(searchValue) => {
-        this.props.updateSearchField(searchValue);
-        if (this.props.search.typingTimeout) {
-          this.props.clearTypingTimeout();
+        updateSearchField(searchValue);
+        if (search.typingTimeout) {
+          clearTypingTimeout();
         }
-        this.props.setTypingTimeout(() => {
-          this.props.searchProducts(searchValue, this.props.pagination.pageSize);
-        }, 1000);
+        setTypingTimeout(() => {
+          searchProducts(searchValue, pageSize, appliedFilters);
+        }, 500);
       }}
     />
   }
