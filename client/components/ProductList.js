@@ -70,7 +70,7 @@ class ProductList extends Component {
 
   render() {
     if (!this.props.products.length &&
-      !(this.props.search.value || this.props.appliedFilters)) {
+      !(this.props.search.value || this.props.appliedFilters.length)) {
       return this.renderEmptyState();
     }
     return this.renderProductList();

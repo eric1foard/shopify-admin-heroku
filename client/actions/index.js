@@ -37,10 +37,13 @@ export function addSelectedProducts(products, pageNum, pageSize, searchStr, filt
         addProducts(products, pageNum, pageSize, searchStr, filters)
         .then(data => dispatch(productsAddedSuccess(data)))
         .then(() => {
+            const message = 'The products you selected are now eligible for viewing in AR.'+
+            ' Please add select product photos and add dimensions for each so they can be'+
+            ' displayed in the augmented reality client';
             const bannerOpts = {
                 status: 'success',
                 title: 'Products added',
-                message: 'The products you selected are now enabled for viewing in AR'
+                message 
             };
             return dispatch(showBanner(bannerOpts));
         })

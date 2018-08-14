@@ -1,6 +1,6 @@
 const initState = {
   pageNum: 0,
-  pageSize: 2, // TODO: change to 50 for prod
+  pageSize: 50,
   hasNextPage: false
 };
 
