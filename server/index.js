@@ -21,10 +21,8 @@ const productRoutes = require('./routes/product');
 const mongoose = require('mongoose');
 // for server-side rendering...
 const { createStore } = require('redux');
-const { Provider } = require('react-redux');
 const { renderToString } = require('react-dom/server');
-const App = require('../client/components/App');
-const rootReducer = require('../client/reducers');
+const { AppEntryPoint, rootReducer } = require('../dist/ssr-index');
 const { getProductPage } = require('./lib/mongo-query');
 
 mongoose.connect(MONGO_CONNECTION_STR, {
@@ -76,38 +74,43 @@ const { withShop } = middleware;
 
 app.use('/shopify', routes);
 
-// Client
-// app.get('/', withShop({authBaseUrl: '/shopify'}), function(request, response) {
-//   const { session: { shop, accessToken } } = request;
-//   response.render('app', {
-//     title: 'Shopify Node App',
-//     apiKey: shopifyConfig.apiKey,
-//     shop: shop,
-//   });
-// });
+app.get('/', /* withShop({authBaseUrl: '/shopify'}), */ async (request, response, next) => {
+  try {
+    // only purpose of this store is to provide initial app state
+    // const { session: { shop } } = request;
+    const shop = 'posterstorear.myshopify.com';
+    const products = await getProductPage(shop, 0, 50);
+    const preloadedState = {
+      products: {
+        payload: {
+          data: {
+            products: products || []
+          }
+        }
+      }
+    };
 
-app.get('/', withShop({authBaseUrl: '/shopify'}), async (request, response) => {
-  // only purpose of this store is to provide initial app state
-  const { session: { shop } } = request;
-  const preloadedState = await getProductPage(shop, 0, 50);
-  const store = createStore(rootReducer, preloadedState);
+    console.log('products ', products);
+    const store = createStore(rootReducer, preloadedState);
+    console.log('store created')
+    const html = renderToString(AppEntryPoint(store));
+    console.log('html rendered')
 
-  const html = renderToString(
-    <Provider store={store}>
-      <App />
-    </Provider>
-  );
-  // sanitize state to prevent script injection
-  const sanitizedPreloadedState =
-    JSON.stringify(preloadedState).replace(/</g, '\\u003c');
+    // sanitize state to prevent script injection
+    const sanitizedPreloadedState =
+      JSON.stringify(preloadedState).replace(/</g, '\\u003c');
 
-  response.render('app', {
-    title: 'Shopify Node App',
-    apiKey: shopifyConfig.apiKey,
-    shop: shop,
-    preloadedState: sanitizedPreloadedState,
-    html
-  });
+    response.render('app', {
+      title: 'Shopify Node App',
+      apiKey: shopifyConfig.apiKey,
+      shop: shop,
+      preloadedState: sanitizedPreloadedState,
+      html
+    });
+  } catch (err) {
+    console.log('err in root route ', err);
+    next(err);
+  }
 });
 
 app.use('/api/products', productRoutes);

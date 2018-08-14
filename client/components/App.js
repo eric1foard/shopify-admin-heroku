@@ -18,11 +18,13 @@ class App extends Component {
   }
 
   componentWillMount() {
-    this.props.getProducts('', this.props.pagination.pageSize, this.props.appliedFilters);
+    // this.props.getProducts('', this.props.pagination.pageSize, this.props.appliedFilters);
   }
 
   render() {
-    const { apiKey, shopOrigin } = window;
+    // const { apiKey, shopOrigin } = window;
+    const apiKey = '1266a4cd165d4601d944a9760f2747ba';
+    const shopOrigin = 'posterstorear.myshopify.com';
 
     return (
       <AppProvider
