@@ -31,22 +31,31 @@ const resolveFilterQuery = filters => {
 }
 
 const resolveQuery = (shop, search, filters) => {
-  let query = { shop }; // by default, query for all products in shop
-  let sort = { title: 1 }; // sort alphabetically
-  // if sort is null, mongo will order results by how well they match query
   let textQuery = { $text: { $search : search } };
   let filterQuery = resolveFilterQuery(filters);
 
   if (search && filters.length) {
-    return { query: { $and: [ textQuery, filterQuery ] }, sort: null };
-  }
+    return {
+      query: { $and: [ { shop }, textQuery, filterQuery ] },
+      sort: null // if sort is null, mongo orders results by query match strength
+    };
+  } 
   if (search) {
-    return { query: textQuery, sort: null };
+    return {
+      query: { $and: [ { shop }, textQuery ] },
+      sort: null
+    };
   }
   if (filters.length) {
-    return { query: filterQuery, sort };
+    return {
+      query: { $and: [ { shop }, filterQuery ] },
+      sort: { title: 1 }
+    };
   }
-  return { query, sort };
+  return {
+    query: { shop }, // by default, query for all products in shop
+    sort: { title: 1 } // sort alphabetically
+  };
 };
 
 module.exports = {

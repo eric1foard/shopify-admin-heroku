@@ -6,6 +6,7 @@ class ProductPicker extends Component {
     render() {
         return <ResourcePicker
             products
+            collections
             allowMultiple
             open={this.props.productPickerModalOpen}
             onCancel={() => this.props.setProductPickerOpen(false)}
