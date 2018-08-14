@@ -19,6 +19,13 @@ const SHOPIFY_APP_HOST = require('../utils/env').getAppHostname(HEROKU_APP_NAME,
 const isDevelopment = require('../utils/env').isDevEnvironment(NODE_ENV);
 const productRoutes = require('./routes/product');
 const mongoose = require('mongoose');
+// for server-side rendering...
+const { createStore } = require('redux');
+const { Provider } = require('react-redux');
+const { renderToString } = require('react-dom/server');
+const App = require('../client/components/App');
+const rootReducer = require('../client/reducers');
+const { getProductPage } = require('./lib/mongo-query');
 
 mongoose.connect(MONGO_CONNECTION_STR, {
   useNewUrlParser: true,
@@ -64,31 +71,55 @@ app.get('/install', (req, res) => res.render('install'));
 const shopify = ShopifyExpress(shopifyConfig);
 
 // Mount Shopify Routes
-const {routes, middleware} = shopify;
+const { routes, middleware } = shopify;
 const { withShop } = middleware;
 
 app.use('/shopify', routes);
 
 // Client
-app.get('/', withShop({authBaseUrl: '/shopify'}), function(request, response) {
-  const { session: { shop, accessToken } } = request;
+// app.get('/', withShop({authBaseUrl: '/shopify'}), function(request, response) {
+//   const { session: { shop, accessToken } } = request;
+//   response.render('app', {
+//     title: 'Shopify Node App',
+//     apiKey: shopifyConfig.apiKey,
+//     shop: shop,
+//   });
+// });
+
+app.get('/', withShop({authBaseUrl: '/shopify'}), async (request, response) => {
+  // only purpose of this store is to provide initial app state
+  const { session: { shop } } = request;
+  const preloadedState = await getProductPage(shop, 0, 50);
+  const store = createStore(rootReducer, preloadedState);
+
+  const html = renderToString(
+    <Provider store={store}>
+      <App />
+    </Provider>
+  );
+  // sanitize state to prevent script injection
+  const sanitizedPreloadedState =
+    JSON.stringify(preloadedState).replace(/</g, '\\u003c');
+
   response.render('app', {
     title: 'Shopify Node App',
     apiKey: shopifyConfig.apiKey,
     shop: shop,
+    preloadedState: sanitizedPreloadedState,
+    html
   });
 });
 
 app.use('/api/products', productRoutes);
 
 // Error Handlers
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   const err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
-app.use(function(error, request, response, next) {
+app.use(function (error, request, response, next) {
   response.locals.message = error.message;
   response.locals.error = request.app.get('env') === 'development' ? error : {};
 

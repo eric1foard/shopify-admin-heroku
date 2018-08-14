@@ -1,8 +1,12 @@
+const Product = require('../models/Product');
 const {
   IMAGE_NEEDED_FILTER,
   DIMENSIONS_NEEDED_FILTER,
   FILTER_OPTS
 } = require('../../utils/constants');
+
+const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE_NUM = 0;
 
 const resolveFilterQueryImage = filters => {
   let imageFilter = filters.find(f => f.key === IMAGE_NEEDED_FILTER);
@@ -58,6 +62,25 @@ const resolveQuery = (shop, search, filters) => {
   };
 };
 
+const getProductPage = (shop, page, limit, search = '', filters = []) => {
+  limit = limit ? parseInt(limit) : DEFAULT_PAGE_SIZE;
+  page = page ? parseInt(page) : DEFAULT_PAGE_NUM;
+  const { query, sort } = resolveQuery(shop, search, filters.map(f => JSON.parse(f)));
+
+  return Product
+  .find(query)
+  .sort(sort)
+  .skip(page * limit)
+  .limit(limit + 1)
+  .then(result => {
+    const hasNextPage = result.length > limit;
+    return {
+      products: hasNextPage ? result.slice(0, result.length - 1) : result,
+      hasNextPage
+    }
+  })
+};
+
 module.exports = {
-  resolveQuery
+  getProductPage
 };

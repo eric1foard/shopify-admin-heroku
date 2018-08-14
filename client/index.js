@@ -1,13 +1,13 @@
 import * as React from 'react';
 import 'isomorphic-fetch';
-import { render } from 'react-dom';
+import { hydrate } from 'react-dom';
 import { Provider } from 'react-redux';
 import { AppContainer } from 'react-hot-loader';
 import store from '../client/store';
 import App from './components/App';
 
 function renderApp() {
-  render(
+  hydrate(
     <AppContainer>
       <Provider store={store}>
         <App/>

@@ -6,29 +6,7 @@ const ShopifyAPIClient = require('shopify-api-node');
 const { s3PutObject } = require('../lib/s3');
 const Product = require('../models/Product');
 const router = require('express').Router();
-const { resolveQuery } = require('../lib/mongo-query');
-
-const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_PAGE_NUM = 0;
-
-const getProductPage = (shop, page, limit, search = '', filters = []) => {
-  limit = limit ? parseInt(limit) : DEFAULT_PAGE_SIZE;
-  page = page ? parseInt(page) : DEFAULT_PAGE_NUM;
-  const { query, sort } = resolveQuery(shop, search, filters.map(f => JSON.parse(f)));
-
-  return Product
-  .find(query)
-  .sort(sort)
-  .skip(page * limit)
-  .limit(limit + 1)
-  .then(result => {
-    const hasNextPage = result.length > limit;
-    return {
-      products: hasNextPage ? result.slice(0, result.length - 1) : result,
-      hasNextPage
-    }
-  })
-};
+const { getProductPage } = require('../lib/mongo-query');
 
 // called when products are selected via product picker modal
 router.post('/', jsonParser, async (request, response, next) => {
