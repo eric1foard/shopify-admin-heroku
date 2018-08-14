@@ -7,7 +7,7 @@
     "start-dev": "NODE_ENV=development nodemon ./bin/www",
     "client-only": "parcel ./test/harness.html",
     "start": "node ./bin/www",
-    "build": "parcel build ./client/index.js --no-minify",
+    "build": "parcel build ./client/index.js",
     "build-dev": "parcel build ./client/index.js --no-minify",
     "clean": "rm -rf ./dist",
     "pretty": "prettier --single-quote --trailing-comma es5 --write {client,bin,config,server}{/*,/**/*}.js",

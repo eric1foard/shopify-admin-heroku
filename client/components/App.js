@@ -2,13 +2,14 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Page, AppProvider } from '@shopify/polaris';
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import ProductList from './ProductList';
 import ProductPicker from './ProductPicker';
 import DeleteAlert from './DeleteAlert';
 import EditView from './EditView';
 import StatusBanner from './StatusBanner';
 import * as Actions from '../actions/index';
+import { EDIT_FORM_NAME, MAIN_PAGE_NAME } from '../../utils/constants';
 
 
 class App extends Component {
@@ -30,8 +31,9 @@ class App extends Component {
         apiKey={apiKey}
       >
         <Page
-          title='Augmented Reality Client'
-          primaryAction={{ content: 'Add Products', onAction: () => this.props.setProductPickerOpen(true) }}
+          title={this.props.page.title}
+          primaryAction={this.renderPrimaryAction()}
+          breadcrumbs={this.props.page.breadcrumbs}
         >
           <StatusBanner
             visible={this.props.banner.visible}
@@ -68,6 +70,20 @@ class App extends Component {
     );
   }
 
+  renderPrimaryAction() {
+    if (this.props.page.title === MAIN_PAGE_NAME) { // main page view
+      return {
+        content: 'Add Products',
+        onAction: () => this.props.setProductPickerOpen(true)
+      }
+    } // otherwise we're in the edit screen
+    return {
+      content: 'Save',
+      onAction: () => this.props.submitForm(EDIT_FORM_NAME),
+      disabled: this.props.form.pristine
+    }
+  }
+
   renderProductList(routerProps) {
     return <ProductList
     {...routerProps}
@@ -83,6 +99,8 @@ class App extends Component {
     updateSearchField={this.props.updateSearchField}
     clearTypingTimeout={this.props.clearTypingTimeout}
     setTypingTimeout={this.props.setTypingTimeout}
+    isLoading={this.props.isLoading}
+    changePage={this.props.changePage}
   />
   }
 

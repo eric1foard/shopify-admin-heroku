@@ -7,5 +7,7 @@ module.exports = {
     FILTER_OPTS: {
         NEEDED: 'needed',
         PRESENT: 'present'
-    }
+    },
+    EDIT_FORM_NAME: 'product-edit',
+    MAIN_PAGE_NAME: 'Products'
 }

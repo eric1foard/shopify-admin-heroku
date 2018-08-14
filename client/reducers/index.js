@@ -8,6 +8,8 @@ import deleteProductOptsReducer from './reducer_delete_product_opts';
 import bannerReducer from './reducer_banner';
 import paginationReducer from './reducer_pagination';
 import searchReducer from './reducer_search';
+import loadingReducer from './reducer_loading';
+import pageReducer from './reducer_page';
 
 const rootReducer = combineReducers({
   products: productsReducer,
@@ -18,6 +20,8 @@ const rootReducer = combineReducers({
   banner: bannerReducer,
   pagination: paginationReducer,
   search: searchReducer,
+  isLoading: loadingReducer,
+  page: pageReducer,
   form: formReducer
 });
 
