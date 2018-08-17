@@ -3,5 +3,6 @@
     "productImageBucket": "six-pages-ar-images",
     "AWSRegion": "us-west-2",
     "cloudFrontHostname": "https://d1yt4mgfxmh02g.cloudfront.net",
-    "s3ObjACL": "public-read"
+    "s3ObjACL": "public-read",
+    "breadcrumbURL": "/apps/augmented-reality-client"
 }

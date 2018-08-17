@@ -1,4 +1,6 @@
 import { MAIN_PAGE_NAME } from '../../utils/constants';
+import config from 'config';
+const url = config.get('breadcrumbURL');
 
 const initState = {
   title: MAIN_PAGE_NAME,
@@ -12,7 +14,7 @@ export default function reducer(state = initState, action) {
           return {
             title,
             breadcrumbs: title === MAIN_PAGE_NAME ? [] :
-            [{content: MAIN_PAGE_NAME, url: '/', accessibilityLabel: `Back to ${MAIN_PAGE_NAME}`}]
+            [{content: MAIN_PAGE_NAME, url, accessibilityLabel: `Back to ${MAIN_PAGE_NAME}`}]
           };
   }
   return state;
