@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import formActions from 'redux-form/es/actions';
 import { Page, AppProvider } from '@shopify/polaris';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import ProductList from './ProductList';
@@ -79,7 +80,7 @@ class App extends Component {
     } // otherwise we're in the edit screen
     return {
       content: 'Save',
-      onAction: () => this.props.submitForm(EDIT_FORM_NAME),
+      onAction: () => this.props.submit(EDIT_FORM_NAME),
       disabled: this.props.form.pristine
     }
   }
@@ -116,7 +117,7 @@ class App extends Component {
 const mapStateToProps = (state) => ({...state});
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({...Actions}, dispatch)
+  return bindActionCreators({...Actions, submit: formActions.submit}, dispatch)
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

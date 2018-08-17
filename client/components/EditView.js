@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Field, reduxForm } from 'redux-form'
+import reduxForm from 'redux-form/es/reduxForm';
+import Field from 'redux-form/es/Field';
 import { connect } from 'react-redux';
 import { Form, FormLayout, Layout, Card, TextField, Button } from '@shopify/polaris';
 import ImageUpload from './ImageUpload';
@@ -20,17 +21,24 @@ const renderTextField = ({
 );
 
 const validate = values => {
-  const { height, width, image } = values,
-  errors = {},
-  ZERO = '0';
-
-  if (height === ZERO) {
-    errors.height = 'Height cannot be 0'
+  let { height, width, image } = values;
+  const errors = {};
+  height = parseInt(height);
+  width = parseInt(width);
+  
+  if (typeof height !== 'number' || isNaN(height)) {
+    errors.height = 'Height must be a numbers'
+  }
+  else if (height <= 0) {
+    errors.height = 'Height must be greater than zero'
   } else if (!height) {
     errors.height = 'Height is required';
   }
-  if (width === ZERO) {
-    errors.width = 'Width cannot be 0'
+  if (typeof width !== 'number' || isNaN(width)) {
+    errors.width = 'Width must be a numbers'
+  }
+  if (width <= 0) {
+    errors.width = 'Width must be greater than zero'
   } else if (!width) {
     errors.width = 'Width is required';
   }

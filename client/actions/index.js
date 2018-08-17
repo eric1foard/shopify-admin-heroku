@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { submit } from 'redux-form';
 
 export function showBanner(payload) {
     return {
@@ -230,5 +229,3 @@ export function changePage({id, title}, history) {
         }))
         .then(() => history.push(`/products/${id}`))
 }
-
-export const submitForm = formName => submit(formName);

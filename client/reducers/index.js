@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { reducer as formReducer } from 'redux-form'
+import formReducer from 'redux-form/es/reducer';
 import productsReducer from './reducer_products';
 import productPickerReducer from './reducer_product_picker';
 import filtersReducer from './reducer_filters';
