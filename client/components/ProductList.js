@@ -8,7 +8,9 @@ import {
   Badge,
   FilterType,
   Stack,
-  Pagination
+  Pagination,
+  SkeletonBodyText,
+  SkeletonDisplayText
 } from '@shopify/polaris';
 import ResourceListFooter from './ResourceListFooter';
 import { hasValidDimensions } from '../../utils/image';
@@ -33,10 +35,10 @@ const dimensionsNeededBadge = (height, width) =>
     <Badge status="attention">Dimensions needed</Badge> :
     null;
 
-const renderShortcutActions = (setDeleteAlertOpen, history, { id, title }) => ([
+const renderShortcutActions = (setDeleteAlertOpen, changePage, { id, title }) => ([
   {
     content: 'Edit',
-    onAction: () => history.push(`/products/${id}`)
+    onAction: changePage
   },
   {
     content: 'Delete',
@@ -45,21 +47,21 @@ const renderShortcutActions = (setDeleteAlertOpen, history, { id, title }) => ([
 ]);
 
 const filterOptions = () => {
-    const options = [ FILTER_OPTS.NEEDED, FILTER_OPTS.PRESENT ];
-    return [{
-      key: IMAGE_NEEDED_FILTER,
-      label: 'Image',
-      operatorText: 'is',
-      type: FilterType.Select,
-      options
-    },
-    {
-      key: DIMENSIONS_NEEDED_FILTER,
-      label: 'Dimensions',
-      operatorText: 'are',
-      type: FilterType.Select,
-      options
-    }]
+  const options = [FILTER_OPTS.NEEDED, FILTER_OPTS.PRESENT];
+  return [{
+    key: IMAGE_NEEDED_FILTER,
+    label: 'Image',
+    operatorText: 'is',
+    type: FilterType.Select,
+    options
+  },
+  {
+    key: DIMENSIONS_NEEDED_FILTER,
+    label: 'Dimensions',
+    operatorText: 'are',
+    type: FilterType.Select,
+    options
+  }]
 };
 
 class ProductList extends Component {
@@ -69,11 +71,15 @@ class ProductList extends Component {
   }
 
   render() {
-    if (!this.props.products.length &&
-      !(this.props.search.value || this.props.appliedFilters.length)) {
+    const { products, search, appliedFilters } = this.props;
+    if (this.props.isLoading) {
+      return this.renderProductList([1, 1, 1], this.renderSkeletonItem);
+    }
+    if (!products.length &&
+      !(search.value || appliedFilters.length)) {
       return this.renderEmptyState();
     }
-    return this.renderProductList();
+    return this.renderProductList(products, this.renderItem);
   }
 
   renderEmptyState() {
@@ -108,13 +114,13 @@ class ProductList extends Component {
     ) : null;
   }
 
-  renderProductList() {
+  renderProductList(items, renderItem) {
     return <Card>
       <ResourceList
         showHeader
         resourceName={{ singular: 'product', plural: 'products' }}
-        items={this.props.products}
-        renderItem={this.renderItem}
+        items={items}
+        renderItem={renderItem}
         filterControl={this.renderFilterControl()}
       />
       {this.renderPagination()}
@@ -132,7 +138,7 @@ class ProductList extends Component {
       searchProducts,
       pagination: { pageSize }
     } = this.props;
-    
+
     return <ResourceList.FilterControl
       filters={filterOptions()}
       appliedFilters={appliedFilters}
@@ -150,6 +156,14 @@ class ProductList extends Component {
     />
   }
 
+  renderSkeletonItem() {
+    return <ResourceList.Item
+      media={<Thumbnail source='' />}
+    >
+      <SkeletonBodyText />
+    </ResourceList.Item>;
+  }
+
   renderItem(item) {
     const { id, title, height, width, image } = item;
     const media = image ?
@@ -157,11 +171,16 @@ class ProductList extends Component {
       <Thumbnail source={EMPTY_IMAGE} alt="no product image" />;
 
     return <ResourceList.Item
+      persistActions
       id={id}
       media={media}
       accessibilityLabel={`View details for ${title}`}
-      shortcutActions={renderShortcutActions(this.props.setDeleteAlertOpen, this.props.history, item)}
-      persistActions
+      shortcutActions={
+        renderShortcutActions(
+        this.props.setDeleteAlertOpen,
+        () => this.props.changePage({ id, title }, this.props.history),
+        item)
+      }
     >
       <Stack spacing="tight" distribution="leading">
         <TextStyle variation="strong">{title}</TextStyle>

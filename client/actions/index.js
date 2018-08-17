@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { submit } from 'redux-form';
 
 export function showBanner(payload) {
     return {
@@ -219,3 +220,15 @@ export function clearTypingTimeout() {
         type: 'CLEAR_TYPING_TIMEOUT'
     };
 }
+
+// TODO: should I remove promise here?
+export function changePage({id, title}, history) {
+    return dispatch =>
+        dispatch(Promise.resolve({
+            type: 'CHANGE_PAGE',
+            payload: { title }
+        }))
+        .then(() => history.push(`/products/${id}`))
+}
+
+export const submitForm = formName => submit(formName);

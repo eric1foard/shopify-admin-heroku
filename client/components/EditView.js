@@ -3,7 +3,7 @@ import { Field, reduxForm } from 'redux-form'
 import { connect } from 'react-redux';
 import { Form, FormLayout, Layout, Card, TextField, Button } from '@shopify/polaris';
 import ImageUpload from './ImageUpload';
-import { ACCEPTED_FILETYPES } from '../../utils/constants';
+import { ACCEPTED_FILETYPES, EDIT_FORM_NAME } from '../../utils/constants';
 
 const renderTextField = ({
   input,
@@ -76,7 +76,7 @@ class EditView extends Component {
           </Card>
         </Layout.AnnotatedSection>
         {/*TODO: better placement of this button*/}
-        <Button submit>Save</Button>
+        {/* <Button submit>Save</Button> */}
       </Form>
     );
   }
@@ -103,7 +103,7 @@ const mapStateToProps = (state, ownProps) => {
 };
 
 EditView = reduxForm({
-  form: 'product-edit',
+  form: EDIT_FORM_NAME,
   validate
 })(EditView);
 EditView  = connect(mapStateToProps)(EditView);
