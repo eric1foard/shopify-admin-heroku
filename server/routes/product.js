@@ -54,10 +54,11 @@ router.post('/', jsonParser, async (request, response, next) => {
 router.get('/', async (request, response, next) => {
   try {
     let {
-      session: { shop },
-      query: { limit, page, search, filters }
+      session,
+      query: { limit, page, search, filters, shop }
     } = request;
 
+    shop = shop || session.shop; // when called from mobile app, shop comes from query
     const products = await getProductPage(shop, page, limit, search, filters);
 
     return response.json(products);
