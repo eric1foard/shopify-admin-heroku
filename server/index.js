@@ -19,20 +19,38 @@ const SHOPIFY_APP_HOST = require('../utils/env').getAppHostname(HEROKU_APP_NAME,
 const isDevelopment = require('../utils/env').isDevEnvironment(NODE_ENV);
 const productRoutes = require('./routes/product');
 const mongoose = require('mongoose');
+const ShopifyAPIClient = require('shopify-api-node');
 
 mongoose.connect(MONGO_CONNECTION_STR, {
   useNewUrlParser: true,
   // autoIndex: false
 });
 
+const setupScriptTag = (request) => {
+  const { session: { shop, accessToken } } = request;
+  const shopify = new ShopifyAPIClient({ shopName: shop, accessToken: accessToken });
+  return shopify.scriptTag.create({
+    event: 'onload',
+    src: 'https://d3digxhfse2rb5.cloudfront.net/index.js', // TODO
+  });
+}
+
 const shopifyConfig = {
   host: SHOPIFY_APP_HOST,
   apiKey: SHOPIFY_APP_KEY,
   secret: SHOPIFY_APP_SECRET,
-  scope: ['write_orders, write_products'],
+  scope: ['write_orders, write_products', 'write_script_tags'],
   shopStore: isDevelopment ? new MemoryStrategy() : new RedisStrategy(REDIS_URL),
-  afterAuth(request, response) {
-    return response.redirect('/');
+  afterAuth(request, response) { // this callback is executed only once, right after install
+    setupScriptTag(request)
+    .then((resp) => {
+      console.log('successfully installed script', resp);
+      response.redirect('/')
+    })
+    .catch(err => {
+      console.error('error installing script', err);
+      response.redirect('/');
+    });
   },
 };
 
